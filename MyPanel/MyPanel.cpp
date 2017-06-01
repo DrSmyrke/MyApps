@@ -64,15 +64,10 @@ static void enterText(GtkEntry *entry, gpointer  user_data)
 
 static void callback(GtkWidget *widget,gpointer data){
 	char* cmd=(char *)data;
-	if(cmd=="OPENWIN"){
-		gtk_widget_show_all(GTK_WIDGET(windowExec));
-		return;
-	}
-if(cmd=="MENU"){system("~/bin/mymenu");}
-if(cmd=="Кор"){system("rm -r ~/.local/share/Trash/files/*");}
-if(cmd=="Wall"){system("~/bin/AutoWallpapers.Зефште");}
-if(cmd=="Apache"){system("~/bin/Apache.Зефште");}
-if(cmd=="APPS"){system("MyApps.Зефште");}
+	if(cmd=="OPENWIN"){system("~/bin/myexec");return;}
+	if(cmd=="MENU"){system("~/bin/mymenu");return;}
+	if(cmd=="Кор"){system("rm -r ~/.local/share/Trash/files/*");return;}
+	if(cmd=="Wall"){system("~/bin/AutoWallpapers.Зефште");return;}
 //if(cmd=="App"){system("sdf=$(find ~/bin -name '*' -type f -executable -printf '%f\n' |  zenity  --list  --title  'Запускатор' --text 'Мой софт' --column 'Программы')\nsdf=$(find ~/bin -name \"$sdf\" -type f -executable)\necho $sdf\ngnome-terminal -e $sdf");}
 //if(cmd=="WK"){system("wmctrl -c :SELECT:");}
 	if(cmd=="WK"){system("xkill");return;}
@@ -82,21 +77,6 @@ int main(int argc,char *argv[])
 	gtk_init (&argc, &argv);
 	gdk_init (&argc, &argv);
 
-	windowExec = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-		g_signal_connect(G_OBJECT(windowExec),"destroy",G_CALLBACK(windowExec_close),NULL);
-		g_signal_connect(G_OBJECT(windowExec),"delete-event",G_CALLBACK(windowExec_close), NULL);
-		gtk_window_set_position(GTK_WINDOW (windowExec),GTK_WIN_POS_CENTER_ALWAYS);
-		GtkWidget* HBox1=gtk_hbox_new(FALSE,0);
-			cmdField=gtk_entry_new();
-				gtk_widget_set_size_request(GTK_WIDGET(cmdField),300,26);
-			g_signal_connect(G_OBJECT(cmdField),"activate",G_CALLBACK(enterText),NULL);
-		gtk_box_pack_start(GTK_BOX(HBox1),cmdField,TRUE,TRUE,0);
-		GtkWidget* bExec = gtk_button_new();
-			gtk_button_set_image(GTK_BUTTON(bExec),gtk_image_new_from_stock(GTK_STOCK_EXECUTE,GTK_ICON_SIZE_MENU));
-			g_signal_connect(bExec,"clicked",G_CALLBACK(callback),(gpointer) "OPENWIN");
-		gtk_box_pack_start(GTK_BOX(HBox1),bExec,FALSE,FALSE,0);
-	gtk_container_add(GTK_CONTAINER(windowExec),HBox1);
-	
 	GtkWidget* window = gtk_window_new (GTK_WINDOW_POPUP);
 	g_signal_connect(G_OBJECT(window),"destroy",gtk_main_quit,NULL);
 	g_signal_connect(G_OBJECT(window),"delete-event",gtk_main_quit, NULL);
@@ -137,19 +117,6 @@ int main(int argc,char *argv[])
 			g_signal_connect(b5,"clicked",G_CALLBACK(callback),(gpointer) "OPENWIN");
 		gtk_box_pack_start(GTK_BOX(HBox),b5,FALSE,FALSE,0);
 	gtk_container_add(GTK_CONTAINER(window),HBox);
-
-
-
-
-
-//buttonNM = gtk_button_new();
-//gtk_button_set_image(GTK_BUTTON(buttonNM),gtk_image_new_from_file("bin/data/img/status.svg"));
-//g_signal_connect(buttonNM,"clicked",G_CALLBACK(callback),(gpointer) "NM");
-//g_signal_connect(buttonNM,"enter",G_CALLBACK(ent),NULL);
-//g_signal_connect(buttonNM,"leave",G_CALLBACK(out),NULL);
-//gtk_table_attach_defaults (GTK_TABLE (table), buttonNM, 6, 7, 0, 1);
-//gtk_widget_show (buttonNM);
-// end
 
 	
 	gtk_widget_show_all (window);
