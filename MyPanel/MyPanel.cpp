@@ -32,11 +32,6 @@
 int winWidth;
 int winHeight;
 GtkWidget* cmdField;
-GtkWidget* windowExec;
-
-static void windowExec_close(){
-	gtk_widget_hide(windowExec);
-}
 
 static gboolean enter_notify_event(GtkWidget *widget,GdkEvent *event,gpointer user_data)
 {
@@ -55,11 +50,6 @@ static gboolean leave_notify_event(GtkWidget *widget,GdkEvent *event,gpointer us
 	int h=gdk_screen_height();
 	gtk_window_move(GTK_WINDOW (widget),w/2-winWidth/2,-23);
 	gtk_window_set_opacity(GTK_WINDOW (widget),0.2);
-}
-
-static void enterText(GtkEntry *entry, gpointer  user_data)
-{
-
 }
 
 static void callback(GtkWidget *widget,gpointer data){
