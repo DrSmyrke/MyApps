@@ -28,99 +28,119 @@
 #include <gdk/gdk.h>
 #include <stdlib.h>
 #include <unistd.h>
-using namespace std;
-int apps=120;
-GtkWidget *window,*table,*button;//,*buttonNM;
-static void destroy(GtkWidget *widget,gpointer data){gtk_main_quit ();}
-static void ent(GtkWidget *widget,gpointer data){
-int w=gdk_screen_width();
-int h=gdk_screen_height();
-gtk_window_move(GTK_WINDOW (window),w/2-apps,0);
-//gtk_button_set_image(GTK_BUTTON(buttonNM),gtk_image_new_from_file("bin/data/img/status.svg"));
-//gtk_window_set_opacity(GTK_WINDOW (window),1);
+
+int winWidth;
+int winHeight;
+GtkWidget* cmdField;
+GtkWidget* windowExec;
+
+static void windowExec_close(){
+	gtk_widget_hide(windowExec);
 }
-static void out(GtkWidget *widget,gpointer data){
-int w=gdk_screen_width();
-int h=gdk_screen_height();
-gtk_window_move(GTK_WINDOW (window),w/2-apps,-23);
-//gtk_window_set_opacity(GTK_WINDOW (window),0);
+
+static gboolean enter_notify_event(GtkWidget *widget,GdkEvent *event,gpointer user_data)
+{
+	gtk_window_get_size(GTK_WINDOW(widget),&winWidth,&winHeight);
+	int w=gdk_screen_width();
+	int h=gdk_screen_height();
+	gtk_window_move(GTK_WINDOW (widget),w/2-winWidth/2,0);
+	//gtk_button_set_image(GTK_BUTTON(buttonNM),gtk_image_new_from_file("bin/data/img/status.svg"));
+	gtk_window_set_opacity(GTK_WINDOW (widget),1);
 }
+
+static gboolean leave_notify_event(GtkWidget *widget,GdkEvent *event,gpointer user_data)
+{
+	gtk_window_get_size(GTK_WINDOW(widget),&winWidth,&winHeight);
+	int w=gdk_screen_width();
+	int h=gdk_screen_height();
+	gtk_window_move(GTK_WINDOW (widget),w/2-winWidth/2,-23);
+	gtk_window_set_opacity(GTK_WINDOW (widget),0.2);
+}
+
+static void enterText(GtkEntry *entry, gpointer  user_data)
+{
+
+}
+
 static void callback(GtkWidget *widget,gpointer data){
-char* cmd=(char *)data;
-if(cmd=="MENU"){system("~/bin/MyMenu.Зефште");}
+	char* cmd=(char *)data;
+	if(cmd=="OPENWIN"){
+		gtk_widget_show_all(GTK_WIDGET(windowExec));
+		return;
+	}
+if(cmd=="MENU"){system("~/bin/mymenu");}
 if(cmd=="Кор"){system("rm -r ~/.local/share/Trash/files/*");}
 if(cmd=="Wall"){system("~/bin/AutoWallpapers.Зефште");}
 if(cmd=="Apache"){system("~/bin/Apache.Зефште");}
 if(cmd=="APPS"){system("MyApps.Зефште");}
 //if(cmd=="App"){system("sdf=$(find ~/bin -name '*' -type f -executable -printf '%f\n' |  zenity  --list  --title  'Запускатор' --text 'Мой софт' --column 'Программы')\nsdf=$(find ~/bin -name \"$sdf\" -type f -executable)\necho $sdf\ngnome-terminal -e $sdf");}
 //if(cmd=="WK"){system("wmctrl -c :SELECT:");}
-if(cmd=="WK"){system("xkill");}
-if(cmd=="NM"){system("echo '123'");}
+	if(cmd=="WK"){system("xkill");return;}
 }
-int main(int argc,char *argv[]){
-gtk_init (&argc, &argv);
-gdk_init (&argc, &argv);
-window = gtk_window_new (GTK_WINDOW_POPUP);
-g_signal_connect(window,"destroy",G_CALLBACK (destroy),NULL);
-gtk_window_set_title (GTK_WINDOW (window), "MyPanel");
-// Изменение размера окна
-gtk_window_set_resizable(GTK_WINDOW (window),FALSE);
-// Скрываем окно в панели задач
-gtk_window_set_skip_taskbar_hint(GTK_WINDOW (window),TRUE);
-// Скрываем окно в пейджере
-gtk_window_set_skip_pager_hint(GTK_WINDOW (window),TRUE);
-// Устанавливаем окно поверх остальных
-gtk_window_set_keep_above(GTK_WINDOW (window),TRUE);
-// Убираем рамку окна
-gtk_window_set_decorated(GTK_WINDOW (window),FALSE);
-// Задаем прозрачность окна
-//gtk_window_set_opacity(GTK_WINDOW (window),0);
-// Прилепляем окно на все рабочие столы
-gtk_window_stick(GTK_WINDOW (window));
-table = gtk_table_new (8,1,FALSE);
-gtk_container_add (GTK_CONTAINER (window), table);
-// кнопки
-button = gtk_button_new_with_label ("MENU");
-g_signal_connect(button,"clicked",G_CALLBACK(callback),(gpointer) "MENU");
-g_signal_connect(button,"enter",G_CALLBACK(ent),NULL);
-g_signal_connect(button,"leave",G_CALLBACK(out),NULL);
-gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 0, 1);
-gtk_widget_show (button);
+int main(int argc,char *argv[])
+{
+	gtk_init (&argc, &argv);
+	gdk_init (&argc, &argv);
 
-button = gtk_button_new_with_label ("Кор");
-g_signal_connect(button,"clicked",G_CALLBACK(callback),(gpointer) "Кор");
-g_signal_connect(button,"enter",G_CALLBACK(ent),NULL);
-g_signal_connect(button,"leave",G_CALLBACK(out),NULL);
-gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 0, 1);
-gtk_widget_show (button);
+	windowExec = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		g_signal_connect(G_OBJECT(windowExec),"destroy",G_CALLBACK(windowExec_close),NULL);
+		g_signal_connect(G_OBJECT(windowExec),"delete-event",G_CALLBACK(windowExec_close), NULL);
+		gtk_window_set_position(GTK_WINDOW (windowExec),GTK_WIN_POS_CENTER_ALWAYS);
+		GtkWidget* HBox1=gtk_hbox_new(FALSE,0);
+			cmdField=gtk_entry_new();
+				gtk_widget_set_size_request(GTK_WIDGET(cmdField),300,26);
+			g_signal_connect(G_OBJECT(cmdField),"activate",G_CALLBACK(enterText),NULL);
+		gtk_box_pack_start(GTK_BOX(HBox1),cmdField,TRUE,TRUE,0);
+		GtkWidget* bExec = gtk_button_new();
+			gtk_button_set_image(GTK_BUTTON(bExec),gtk_image_new_from_stock(GTK_STOCK_EXECUTE,GTK_ICON_SIZE_MENU));
+			g_signal_connect(bExec,"clicked",G_CALLBACK(callback),(gpointer) "OPENWIN");
+		gtk_box_pack_start(GTK_BOX(HBox1),bExec,FALSE,FALSE,0);
+	gtk_container_add(GTK_CONTAINER(windowExec),HBox1);
+	
+	GtkWidget* window = gtk_window_new (GTK_WINDOW_POPUP);
+	g_signal_connect(G_OBJECT(window),"destroy",gtk_main_quit,NULL);
+	g_signal_connect(G_OBJECT(window),"delete-event",gtk_main_quit, NULL);
+	g_signal_connect(G_OBJECT(window), "leave-notify-event", G_CALLBACK(leave_notify_event), NULL);
+	g_signal_connect(G_OBJECT(window), "enter-notify-event", G_CALLBACK(enter_notify_event), NULL);
+	gtk_window_set_title (GTK_WINDOW (window), "MyPanel");
+	// Изменение размера окна
+	gtk_window_set_resizable(GTK_WINDOW (window),FALSE);
+	// Скрываем окно в панели задач
+	gtk_window_set_skip_taskbar_hint(GTK_WINDOW (window),TRUE);
+	// Скрываем окно в пейджере
+	gtk_window_set_skip_pager_hint(GTK_WINDOW (window),TRUE);
+	// Устанавливаем окно поверх остальных
+	gtk_window_set_keep_above(GTK_WINDOW (window),TRUE);
+	// Убираем рамку окна
+	gtk_window_set_decorated(GTK_WINDOW (window),FALSE);
+	// Задаем прозрачность окна
+	gtk_window_set_opacity(GTK_WINDOW (window),0.2);
+	// Прилепляем окно на все рабочие столы
+	gtk_window_stick(GTK_WINDOW (window));
+	GtkWidget* HBox=gtk_hbox_new(FALSE,0);
+		GtkWidget* b1 = gtk_button_new_with_label("MENU");
+			g_signal_connect(b1,"clicked",G_CALLBACK(callback),(gpointer) "MENU");
+		gtk_box_pack_start(GTK_BOX(HBox),b1,FALSE,FALSE,0);
+		GtkWidget* b2 = gtk_button_new();
+			gtk_button_set_image(GTK_BUTTON(b2),gtk_image_new_from_stock(GTK_STOCK_CLEAR,GTK_ICON_SIZE_MENU));
+			g_signal_connect(b2,"clicked",G_CALLBACK(callback),(gpointer) "Кор");
+		gtk_box_pack_start(GTK_BOX(HBox),b2,FALSE,FALSE,0);
+		GtkWidget* b3 = gtk_button_new_with_label("Wall");
+			g_signal_connect(b3,"clicked",G_CALLBACK(callback),(gpointer) "Wall");
+		gtk_box_pack_start(GTK_BOX(HBox),b3,FALSE,FALSE,0);
+		GtkWidget* b4 = gtk_button_new();
+			gtk_button_set_image(GTK_BUTTON(b4),gtk_image_new_from_stock(GTK_STOCK_QUIT,GTK_ICON_SIZE_MENU));
+			g_signal_connect(b4,"clicked",G_CALLBACK(callback),(gpointer) "WK");
+		gtk_box_pack_start(GTK_BOX(HBox),b4,FALSE,FALSE,0);
+		GtkWidget* b5 = gtk_button_new();
+			gtk_button_set_image(GTK_BUTTON(b5),gtk_image_new_from_stock(GTK_STOCK_APPLY,GTK_ICON_SIZE_MENU));
+			g_signal_connect(b5,"clicked",G_CALLBACK(callback),(gpointer) "OPENWIN");
+		gtk_box_pack_start(GTK_BOX(HBox),b5,FALSE,FALSE,0);
+	gtk_container_add(GTK_CONTAINER(window),HBox);
 
-button = gtk_button_new_with_label ("Wall");
-g_signal_connect(button,"clicked",G_CALLBACK(callback),(gpointer) "Wall");
-g_signal_connect(button,"enter",G_CALLBACK(ent),NULL);
-g_signal_connect(button,"leave",G_CALLBACK(out),NULL);
-gtk_table_attach_defaults (GTK_TABLE (table), button, 3, 4, 0, 1);
-gtk_widget_show (button);
 
-button = gtk_button_new_with_label ("Apache");
-g_signal_connect(button,"clicked",G_CALLBACK(callback),(gpointer) "Apache");
-g_signal_connect(button,"enter",G_CALLBACK(ent),NULL);
-g_signal_connect(button,"leave",G_CALLBACK(out),NULL);
-gtk_table_attach_defaults (GTK_TABLE (table), button, 4, 5, 0, 1);
-gtk_widget_show (button);
 
-button = gtk_button_new_with_label ("APPS");
-g_signal_connect(button,"clicked",G_CALLBACK(callback),(gpointer) "APPS");
-g_signal_connect(button,"enter",G_CALLBACK(ent),NULL);
-g_signal_connect(button,"leave",G_CALLBACK(out),NULL);
-gtk_table_attach_defaults (GTK_TABLE (table), button, 5, 6, 0, 1);
-gtk_widget_show (button);
 
-button = gtk_button_new_with_label ("WK");
-g_signal_connect(button,"clicked",G_CALLBACK(callback),(gpointer) "WK");
-g_signal_connect(button,"enter",G_CALLBACK(ent),NULL);
-g_signal_connect(button,"leave",G_CALLBACK(out),NULL);
-gtk_table_attach_defaults (GTK_TABLE (table), button, 6, 7, 0, 1);
-gtk_widget_show (button);
 
 //buttonNM = gtk_button_new();
 //gtk_button_set_image(GTK_BUTTON(buttonNM),gtk_image_new_from_file("bin/data/img/status.svg"));
@@ -130,14 +150,18 @@ gtk_widget_show (button);
 //gtk_table_attach_defaults (GTK_TABLE (table), buttonNM, 6, 7, 0, 1);
 //gtk_widget_show (buttonNM);
 // end
-gtk_widget_show (table);
-gtk_widget_show (window);
-int w=gdk_screen_width();
-int h=gdk_screen_height();
-// Перемещаем окно
-gtk_window_move(GTK_WINDOW (window),w/2-apps,-23);
-cout << w << "\n";
-cout << h << "\n";
-gtk_main ();
-return 0;
+
+	
+	gtk_widget_show_all (window);
+	gtk_window_set_default_size(GTK_WINDOW (window),10,10);
+	gtk_window_resize(GTK_WINDOW (window),10,10);
+	int w=gdk_screen_width();
+	int h=gdk_screen_height();
+	// Перемещаем окно
+	gtk_window_get_size(GTK_WINDOW(window),&winWidth,&winHeight);
+	gtk_window_move(GTK_WINDOW (window),w/2-winWidth/2,-23);
+	std::cout << w << "\n";
+	std::cout << h << "\n";
+	gtk_main ();
+	return 0;
 }
