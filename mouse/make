@@ -1,0 +1,2 @@
+#!/bin/bash
+gcc mouse.c -o mouse `pkg-config --cflags --libs gtk+-2.0` -lX11
