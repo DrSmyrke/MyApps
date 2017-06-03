@@ -117,7 +117,7 @@ sub start{
 		}
 	}
 	if(substr($text,0,1) eq "^"){$cmd="xterm -e '$cmd'";}
-	if(fork==0){exec "$cmd";kill 'TERM',$$;}
+	if(fork==0){exec "$cmd || notify-send 'Application not execution!' '$cmd'";kill 'TERM',$$;}
 	Gtk2->main_quit;
 }
 sub upd{
