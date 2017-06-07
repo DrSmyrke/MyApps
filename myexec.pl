@@ -116,7 +116,8 @@ sub start{
 			$cmd="gksu xdg-open $text || ksudo xdg-open $text";
 		}
 	}
-	if(substr($text,0,1) eq "^"){$cmd="xterm -e '$cmd'";}
+	if(substr($text,0,1) eq "^"){$cmd=substr($cmd,1);$cmd="xterm -e '$cmd'";}
+	if(substr($text,0,1) eq "!"){$cmd=substr($cmd,1);$cmd="gksu '$cmd' || ksudo '$cmd'";}
 	if(fork==0){exec "$cmd || notify-send 'Application not execution!' '$cmd'";kill 'TERM',$$;}
 	Gtk2->main_quit;
 }
@@ -206,6 +207,7 @@ sub create_completion_model {
 	}
 	$store->set ($store->append, 0, "totally");
 	if(substr($text,0,1) eq "^"){$pref="^";$text=substr($text,1);}
+	if(substr($text,0,1) eq "!"){$pref="!";$text=substr($text,1);}
 	foreach my $path(split(":",$ENV{"PATH"})){
 		foreach my $app(glob("$path/$text*")){
 			my @tmp=split("/",$app);
@@ -216,3 +218,4 @@ sub create_completion_model {
 	}
 	return $store;
 }
+
