@@ -27,6 +27,8 @@ exit if ($^O eq 'MSWin32'); # под виндой мы не работаем, м
 use utf8;
 use Encode;
 use strict;
+use Time::Local;
+use Time::Local 'timelocal_nocheck';
 use Gtk2 '-init';
 my $field;
 my $oldText;
@@ -205,7 +207,62 @@ sub create_completion_model {
 			}
 		}
 	}
-	$store->set ($store->append, 0, "totally");
+	if(substr($text,0,2) eq "c " or substr($text,0,2) eq "с "){
+		$pref="c ";
+		if(substr($text,0,2) eq "с "){$pref="с ";}
+		$text=substr($text,2);
+		my ($sday,$smon,$syear)=split("[.]",$text);
+		my ($sek,$min,$hour,$day,$mon,$year)=localtime;
+		$mon+=1;
+		$year+=1900;
+		if(!$sday or $sday<=0 or $sday>=31){return $store;}
+		if(!$smon or $smon<=0 or $smon>=12){$smon=$mon;}
+		if(!$syear or $syear<=1990 or $syear>$year){$syear=$year;}
+		my $time = timelocal_nocheck($sek,$min,$hour,$sday,$smon,$syear);
+		my $r=timelocal_nocheck($sek,$min,$hour,$day,$mon,$year)-$time;
+		if($r<0){return $store;}
+		$store->set($store->append,0,"$pref$text прошло $r сек.");
+		my $d=int($r/86400);
+		if($d>=1){$store->set($store->append,0,"$pref$text прошло $d дн.");}
+		my $w=int($d/7);
+		if($d>7){
+			$d-=$w*7;
+			$store->set($store->append,0,"$pref$text прошло $w нед. $d дн.");
+		}
+		my $m=int(($r/86400)/30);
+		if($w>5){$store->set($store->append,0,"$pref$text прошло $m мес.");}
+		my $y=int($m/12);
+		if($m>12){$store->set($store->append,0,"$pref$text прошло лет: $y");}
+		return $store;
+	}
+	if(substr($text,0,3) eq "до " or substr($text,0,3) eq "lj "){
+		$pref="до ";
+		if(substr($text,0,3) eq "lj "){$pref="lj ";}
+		$text=substr($text,3);
+		my ($sday,$smon,$syear)=split("[.]",$text);
+		my ($sek,$min,$hour,$day,$mon,$year)=localtime;
+		$mon+=1;
+		$year+=1900;
+		if(!$sday or $sday<=0 or $sday>31){return $store;}
+		if(!$smon or $smon<=0 or $smon>12){$smon=$mon;}
+		if(!$syear or $syear<=1990 or $syear>$year){$syear=$year;}
+		my $time = timelocal_nocheck($sek,$min,$hour,$sday,$smon,$syear);
+		my $r=$time-timelocal_nocheck($sek,$min,$hour,$day,$mon,$year);
+		if($r<0){return $store;}
+		$store->set($store->append,0,"$pref$text осталось $r сек.");
+		my $d=int($r/86400);
+		if($d>=1){$store->set($store->append,0,"$pref$text осталось $d дн.");}
+		my $w=int($d/7);
+		if($d>7){
+			$d-=$w*7;
+			$store->set($store->append,0,"$pref$text осталось $w нед. $d дн.");
+		}
+		my $m=int(($r/86400)/30);
+		if($w>5){$store->set($store->append,0,"$pref$text осталось $m мес.");}
+		my $y=int($m/12);
+		if($m>12){$store->set($store->append,0,"$pref$text осталось лет: $y");}
+		return $store;
+	}
 	if(substr($text,0,1) eq "^"){$pref="^";$text=substr($text,1);}
 	if(substr($text,0,1) eq "!"){$pref="!";$text=substr($text,1);}
 	foreach my $path(split(":",$ENV{"PATH"})){
