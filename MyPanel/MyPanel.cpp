@@ -54,6 +54,7 @@ static gboolean leave_notify_event(GtkWidget *widget,GdkEvent *event,gpointer us
 
 static void callback(GtkWidget *widget,gpointer data){
 	char* cmd=(char *)data;
+	if(cmd=="PASSWD"){system("~/bin/passwd.3eфште");return;}
 	if(cmd=="OPENWIN"){system("~/bin/myexec");return;}
 	if(cmd=="MENU"){system("~/bin/mymenu");return;}
 	if(cmd=="Кор"){system("rm -r ~/.local/share/Trash/files/*");return;}
@@ -106,6 +107,10 @@ int main(int argc,char *argv[])
 			gtk_button_set_image(GTK_BUTTON(b5),gtk_image_new_from_stock(GTK_STOCK_APPLY,GTK_ICON_SIZE_MENU));
 			g_signal_connect(b5,"clicked",G_CALLBACK(callback),(gpointer) "OPENWIN");
 		gtk_box_pack_start(GTK_BOX(HBox),b5,FALSE,FALSE,0);
+		GtkWidget* b6 = gtk_button_new();
+			gtk_button_set_image(GTK_BUTTON(b6),gtk_image_new_from_stock(GTK_STOCK_DIALOG_AUTHENTICATION,GTK_ICON_SIZE_MENU));
+			g_signal_connect(b6,"clicked",G_CALLBACK(callback),(gpointer) "PASSWD");
+		gtk_box_pack_start(GTK_BOX(HBox),b6,FALSE,FALSE,0);
 	gtk_container_add(GTK_CONTAINER(window),HBox);
 
 	
