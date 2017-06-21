@@ -110,7 +110,7 @@ Gtk2->main;
 sub start{
 	my ($text)=@_;
 	if($text eq ""){return;}
-	my $cmd="";
+	my $cmd="$text";
 	if(substr($text,0,1) eq "/" or substr($text,0,2) eq "#/"){
 		$cmd="xdg-open $text";
 		if(substr($text,0,2) eq "#/"){
@@ -121,7 +121,7 @@ sub start{
 	if(substr($text,0,7) eq "http://" or substr($text,0,8) eq "https://"){$cmd="xdg-open $text";}
 	if(substr($text,0,1) eq "^"){$cmd=substr($cmd,1);$cmd="xterm -e '$cmd'";}
 	if(substr($text,0,1) eq "!"){$cmd=substr($cmd,1);$cmd="gksu '$cmd' || ksudo '$cmd'";}
-	if($cmd){if(fork==0){exec "$cmd || notify-send 'Application not execution!' '$cmd'";kill 'TERM',$$;}}
+	if(fork==0){exec "$cmd || notify-send 'Application not execution!' '$cmd'";kill 'TERM',$$;}
 	Gtk2->main_quit;
 }
 sub upd{
