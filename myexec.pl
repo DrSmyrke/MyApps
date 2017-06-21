@@ -35,7 +35,7 @@ my $oldText;
 my @vals;
 
 my $win=Gtk2::Window->new('toplevel');
-$win->set_title("MyExec v0.1");
+$win->set_title("MyExec v0.2");
 $win->set_position("GTK_WIN_POS_CENTER_ALWAYS");
 $win->set_resizable(0);
 $win->set_keep_above('TRUE');
@@ -110,7 +110,7 @@ Gtk2->main;
 sub start{
 	my ($text)=@_;
 	if($text eq ""){return;}
-	my $cmd=$text;
+	my $cmd="";
 	if(substr($text,0,1) eq "/" or substr($text,0,2) eq "#/"){
 		$cmd="xdg-open $text";
 		if(substr($text,0,2) eq "#/"){
@@ -118,9 +118,10 @@ sub start{
 			$cmd="gksu xdg-open $text || ksudo xdg-open $text";
 		}
 	}
+	if(substr($text,0,7) eq "http://" or substr($text,0,8) eq "https://"){$cmd="xdg-open $text";}
 	if(substr($text,0,1) eq "^"){$cmd=substr($cmd,1);$cmd="xterm -e '$cmd'";}
 	if(substr($text,0,1) eq "!"){$cmd=substr($cmd,1);$cmd="gksu '$cmd' || ksudo '$cmd'";}
-	if(fork==0){exec "$cmd || notify-send 'Application not execution!' '$cmd'";kill 'TERM',$$;}
+	if($cmd){if(fork==0){exec "$cmd || notify-send 'Application not execution!' '$cmd'";kill 'TERM',$$;}}
 	Gtk2->main_quit;
 }
 sub upd{
@@ -175,10 +176,12 @@ sub create_completion_model {
 			if($type eq "USD"){
 				my $res1=($usd*$tmp);
 				my $res2=($usd*$tmp)/$eur;
-				$res1=substr($res1,0,6);
-				$res2=substr($res2,0,6);
-				my $str1="$tmp USD = $res1 RUB";
-				my $str2="$tmp USD = $res2 EUR";
+				($res1,my $res1ost)=split(",",$res1);
+				($res2,my $res2ost)=split(",",$res2);
+				$res2ost=substr($res2ost,0,2);
+				$res2ost=substr($res2ost,0,2);
+				my $str1="$tmp USD = $res1.$res2ost RUB";
+				my $str2="$tmp USD = $res2.$res2ost EUR";
 				$store->set($store->append,0,$str1);
 				$store->set($store->append,0,$str2);
 				return $store;
@@ -186,10 +189,12 @@ sub create_completion_model {
 			if($type eq "RUB"){
 				my $res1=($tmp/$usd);
 				my $res2=($tmp/$eur);
-				$res1=substr($res1,0,6);
-				$res2=substr($res2,0,6);
-				my $str1="$tmp RUB = $res1 USD";
-				my $str2="$tmp RUB = $res2 EUR";
+				($res1,my $res1ost)=split(",",$res1);
+				($res2,my $res2ost)=split(",",$res2);
+				$res2ost=substr($res2ost,0,2);
+				$res2ost=substr($res2ost,0,2);
+				my $str1="$tmp RUB = $res1.$res2ost USD";
+				my $str2="$tmp RUB = $res2.$res2ost EUR";
 				$store->set($store->append,0,$str1);
 				$store->set($store->append,0,$str2);
 				return $store;
@@ -197,10 +202,12 @@ sub create_completion_model {
 			if($type eq "EUR"){
 				my $res1=($tmp*$eur)/$usd;
 				my $res2=($tmp*$eur);
-				$res1=substr($res1,0,6);
-				$res2=substr($res2,0,6);
-				my $str1="$tmp EUR = $res1 USD";
-				my $str2="$tmp EUR = $res2 RUB";
+				($res1,my $res1ost)=split(",",$res1);
+				($res2,my $res2ost)=split(",",$res2);
+				$res2ost=substr($res2ost,0,2);
+				$res2ost=substr($res2ost,0,2);
+				my $str1="$tmp EUR = $res1.$res2ost USD";
+				my $str2="$tmp EUR = $res2.$res2ost RUB";
 				$store->set($store->append,0,$str1);
 				$store->set($store->append,0,$str2);
 				return $store;
