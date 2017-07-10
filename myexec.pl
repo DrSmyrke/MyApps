@@ -137,10 +137,10 @@ sub create_completion_model {
 	#my $store = Gtk2::ListStore->new (qw/ Glib::String Glib::Object /);
 	my $text=$field->get_text();
 	my $pref="";
-	if(substr($text,0,1) eq "/" or substr($text,0,2) eq "#/"){
-		if(substr($text,0,2) eq "#/"){
+	if(substr($text,0,1) eq "/" or substr($text,0,2) eq "!/"){
+		if(substr($text,0,2) eq "!/"){
 			$text=substr($text,1);
-			$pref="#";
+			$pref="!";
 		}
 		foreach my $path(glob("$text*")){
 			my $str="$pref".decode('UTF-8',$path);
