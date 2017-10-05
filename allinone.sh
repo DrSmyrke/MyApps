@@ -23,6 +23,7 @@
 #
 #
 #
+set -o nounset -o errexit
 if ! [ $1 ];then exit;fi
 if [ $1 = "-h" ];then
 	echo "Usage:	$0 <SCRIPT> ARGUMENTS"
@@ -61,6 +62,9 @@ if [ $1 = "-h" ];then
 	echo "s32 - Crypt ~/passwd"
 	echo "s33 - Current day"
     echo "s34 - Install QT DEV"
+	echo "s35 - Generate SSH RSA key in current folder"
+	echo "s36 - Update My Time Machine (save /home to my server)"
+	echo "s37 - Restore /home (restore /home from Time Machine on my server)"
 fi
 if [ $1 = "s1" ];then
 	grep -Eiwo -m1 'nvidia|amd|ati|intel' /var/log/Xorg.0.log
@@ -283,3 +287,34 @@ fi
 if [ $1 = "s34" ];then
 	sudo apt-get install qtcreator qt5-doc qttranslations5-l10n g++ gcc cmake qtbase5-dev
 fi
+if [ $1 = "s35" ];then
+	ssh-keygen -t rsa -b 4096 -f ./ssh-new_key-rsa
+fi
+#############################################################
+if [ $1 = "s36" ] || [ $1 = "s37" ];then
+	DIR="/HDD/rsync"
+	LOCAL_DIR=~/bin
+	rUser="linaro"
+	rServer="192.168.1.37"
+	rPort=3700
+	date=$(date --iso-8601=seconds)
+fi
+if [ $1 = "s36" ];then
+	if [ -d $LOCAL_DIR ];then
+		cd $LOCAL_DIR
+		ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then mkdir '$DIR/$date'; if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
+		rsync -azpgtlF --delete-excluded --prune-empty-dirs -e "ssh -p $rPort" ./ $rUser@$rServer:$DIR/lastest/
+
+		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then test -L '$DIR/lastest' || mkdir '$DIR/$date' && ln -s '$DIR/$date' '$DIR/lastest'; fi;"
+		#rsync --delete-excluded --prune-empty-dirs --archive -e "ssh -p $rPort" -F --link-dest="$DIR/lastest" ./ $rUser@$rServer:$DIR/$date/
+		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
+	fi;
+	# rsync --bwlimit=100 -avzhe ssh /user/home/documents/ root@192.168.0.101:/root/documents/
+fi
+if [ $1 = "s37" ];then
+	cd ~/Desktop/src2
+	rsync -avz -e "ssh -p $rPort" $rUser@$rServer:$DIR/latest/ ./
+fi
+#############################################################
+
+#sshfs linaro@192.168.1.37:3700/HDD $DIR
