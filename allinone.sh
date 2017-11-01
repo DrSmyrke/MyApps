@@ -63,8 +63,11 @@ if [ $1 = "-h" ];then
 	echo "s33 - Current day"
     echo "s34 - Install QT DEV"
 	echo "s35 - Generate SSH RSA key in current folder"
-	echo "s36 - Update My Time Machine (save /home to my server)"
-	echo "s37 - Restore /home (restore /home from Time Machine on my server)"
+	echo "s36 - Create 10Gb in ZIP File"
+	echo "s37 - Endless launch of the team <COMMAND>"
+	echo "s38 - BackUp folder to my server and back <home|work> <init|save>"
+	echo "s39 - Update My Time Machine (save ~/bin, ~/Docs, ~/Desktop to my server)"
+	echo "s40 - Full HOME backup to my server"
 fi
 if [ $1 = "s1" ];then
 	grep -Eiwo -m1 'nvidia|amd|ati|intel' /var/log/Xorg.0.log
@@ -290,31 +293,73 @@ fi
 if [ $1 = "s35" ];then
 	ssh-keygen -t rsa -b 4096 -f ./ssh-new_key-rsa
 fi
-#############################################################
-if [ $1 = "s36" ] || [ $1 = "s37" ];then
-	DIR="/HDD/rsync"
-	LOCAL_DIR=~/bin
-	rUser="linaro"
-	rServer="192.168.1.37"
-	rPort=3700
-	date=$(date --iso-8601=seconds)
-fi
 if [ $1 = "s36" ];then
-	if [ -d $LOCAL_DIR ];then
-		cd $LOCAL_DIR
-		ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then mkdir '$DIR/$date'; if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
-		rsync -azpgtlF --delete-excluded --prune-empty-dirs -e "ssh -p $rPort" ./ $rUser@$rServer:$DIR/lastest/
-
-		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then test -L '$DIR/lastest' || mkdir '$DIR/$date' && ln -s '$DIR/$date' '$DIR/lastest'; fi;"
-		#rsync --delete-excluded --prune-empty-dirs --archive -e "ssh -p $rPort" -F --link-dest="$DIR/lastest" ./ $rUser@$rServer:$DIR/$date/
-		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
-	fi;
-	# rsync --bwlimit=100 -avzhe ssh /user/home/documents/ root@192.168.0.101:/root/documents/
+	dd if=/dev/zero bs=1M count=10240 | gzip > 10G.gzip
 fi
 if [ $1 = "s37" ];then
-	cd ~/Desktop/src2
-	rsync -avz -e "ssh -p $rPort" $rUser@$rServer:$DIR/latest/ ./
+	while [ 1 ]; do $2; sleep 3; done;
 fi
 #############################################################
+if [ $1 = "s38" ] || [ $1 = "s39" ] || [ $1 = "s40" ];then
+	DIR="/mnt/rsync"
+	LOCAL_DIR=~/bin
+	rUser="username"
+	rServer="www.ru"
+	rHomeServer="192.168.1.1"
+	rPort=22
+	date=$(date --iso-8601=seconds)
+fi
+function rsyncCmd(){
+	rsync -azpgtlF --delete-excluded --prune-empty-dirs -e "ssh -p $rPort" $1 $2
+}
+if [ $1 = "s38" ];then
+	if [ $2 = "home" ];then
+		if [ $3 = "init" ];then
+			rsyncCmd $rUser@$rHomeServer:$DIR/.mozilla ~
+			rsyncCmd $rUser@$rHomeServer:$DIR/Templates ~
+			rsyncCmd $rUser@$rHomeServer:$DIR/Images ~
+			rsyncCmd $rUser@$rHomeServer:$DIR/.fonts ~
+			rsyncCmd $rUser@$rHomeServer:$DIR/.icons ~
+			rsyncCmd $rUser@$rHomeServer:$DIR/.themes ~
+		fi
+		if [ $3 = "save" ];then
+			rsyncCmd ~/.mozilla $rUser@$rHomeServer:$DIR/
+			rsyncCmd ~/Templates $rUser@$rHomeServer:$DIR/
+			rsyncCmd ~/Images $rUser@$rHomeServer:$DIR/
+			rsyncCmd ~/.fonts $rUser@$rHomeServer:$DIR/
+			rsyncCmd ~/.icons $rUser@$rHomeServer:$DIR/
+			rsyncCmd ~/.themes $rUser@$rHomeServer:$DIR/
+		fi
+	fi
+	if [ $2 = "work" ];then
+		if [ $3 = "init" ];then
+			rsyncCmd $rUser@$rServer:$DIR/.mozilla ~
+			rsyncCmd $rUser@$rServer:$DIR/Templates ~
+			rsyncCmd $rUser@$rServer:$DIR/Images ~
+			rsyncCmd $rUser@$rServer:$DIR/.fonts ~
+			rsyncCmd $rUser@$rServer:$DIR/.icons ~
+			rsyncCmd $rUser@$rServer:$DIR/.themes ~
+		fi
+		if [ $3 = "save" ];then
+			rsyncCmd ~/.mozilla $rUser@$rServer:$DIR/
+			rsyncCmd ~/.mozilla $rUser@$rServer:$DIR/
+			rsyncCmd ~/Templates $rUser@$rServer:$DIR/
+			rsyncCmd ~/Images $rUser@$rServer:$DIR/
+			rsyncCmd ~/.fonts $rUser@$rServer:$DIR/
+			rsyncCmd ~/.icons $rUser@$rServer:$DIR/
+			rsyncCmd ~/.themes $rUser@$rServer:$DIR/
+		fi
+	fi
+fi
+if [ $1 = "s39" ];then
+	ssh $rUser@$rHomeServer -p $rPort "if [ -d $DIR ];then mkdir '$DIR/$date'; if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
+	rsyncCmd ~/bin $rUser@$rHomeServer:$DIR/lastest/
+	rsyncCmd ~/Docs $rUser@$rHomeServer:$DIR/lastest/
+	rsyncCmd ~/Desktop $rUser@$rHomeServer:$DIR/lastest/
+fi
+if [ $1 = "s40" ];then
+	rsyncCmd ~/ $rUser@$rHomeServer:$DIR/home/
+fi
 
-#sshfs linaro@192.168.1.37:3700/HDD $DIR
+#############################################################
+
