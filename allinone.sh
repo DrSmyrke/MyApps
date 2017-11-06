@@ -68,6 +68,7 @@ if [ $1 = "-h" ];then
 	echo "s38 - BackUp folder to my server and back <home|work> <init|save>"
 	echo "s39 - Update My Time Machine (save ~/bin, ~/Docs, ~/Desktop to my server)"
 	echo "s40 - Full HOME backup to my server"
+	echo "s41 - SSH tunnel <LOCAL PORT> <REMOTE SERVER> <REMOTE PORT> <SSH SERVER CONNECT LINE>"
 fi
 if [ $1 = "s1" ];then
 	grep -Eiwo -m1 'nvidia|amd|ati|intel' /var/log/Xorg.0.log
@@ -288,7 +289,7 @@ if [ $1 = "s33" ];then
 	calendar
 fi
 if [ $1 = "s34" ];then
-	sudo apt-get install qtcreator qt5-doc qttranslations5-l10n g++ gcc cmake qtbase5-dev
+	sudo apt-get install qtcreator qt5-doc qttranslations5-l10n g++ gcc cmake qtbase5-dev git meld
 fi
 if [ $1 = "s35" ];then
 	ssh-keygen -t rsa -b 4096 -f ./ssh-new_key-rsa
@@ -301,12 +302,12 @@ if [ $1 = "s37" ];then
 fi
 #############################################################
 if [ $1 = "s38" ] || [ $1 = "s39" ] || [ $1 = "s40" ];then
-	DIR="/mnt/rsync"
+	DIR="/mnt/hdd/rsync"
 	LOCAL_DIR=~/bin
-	rUser="username"
-	rServer="www.ru"
-	rHomeServer="192.168.1.1"
-	rPort=22
+	rUser="drsmyrke"
+	rServer="drsmyrke-home.pskovline.ru"
+	rHomeServer="192.168.1.73"
+	rPort=3700
 	date=$(date --iso-8601=seconds)
 fi
 function rsyncCmd(){
@@ -342,24 +343,45 @@ if [ $1 = "s38" ];then
 		fi
 		if [ $3 = "save" ];then
 			rsyncCmd ~/.mozilla $rUser@$rServer:$DIR/
-			rsyncCmd ~/.mozilla $rUser@$rServer:$DIR/
 			rsyncCmd ~/Templates $rUser@$rServer:$DIR/
 			rsyncCmd ~/Images $rUser@$rServer:$DIR/
 			rsyncCmd ~/.fonts $rUser@$rServer:$DIR/
 			rsyncCmd ~/.icons $rUser@$rServer:$DIR/
 			rsyncCmd ~/.themes $rUser@$rServer:$DIR/
+			rsyncCmd ~/.ssh $rUser@$rServer:$DIR/work
+			rsyncCmd ~/Desktop/Projects $rUser@$rServer:$DIR/work
 		fi
 	fi
+	notify-send "Sync $2 $3" "complete"
 fi
 if [ $1 = "s39" ];then
 	ssh $rUser@$rHomeServer -p $rPort "if [ -d $DIR ];then mkdir '$DIR/$date'; if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
 	rsyncCmd ~/bin $rUser@$rHomeServer:$DIR/lastest/
 	rsyncCmd ~/Docs $rUser@$rHomeServer:$DIR/lastest/
 	rsyncCmd ~/Desktop $rUser@$rHomeServer:$DIR/lastest/
+	notify-send "Sync" "complete"
 fi
 if [ $1 = "s40" ];then
 	rsyncCmd ~/ $rUser@$rHomeServer:$DIR/home/
+	notify-send "Sync" "complete"
 fi
-
 #############################################################
+if [ $1 = "s41" ];then
+	ssh -L 127.0.0.1:$1:$2:$3 $4
+fi
+#if [ $1 = "s38" ];then
+#	cd ~/Desktop/src2
+#	rsync -avz -e "ssh -p $rPort" $rUser@$rServer:$DIR/latest/ ./
+#fi
+	#if [ -d $LOCAL_DIR ];then
+		#cd $LOCAL_DIR
+		#
+		#
 
+		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then test -L '$DIR/lastest' || mkdir '$DIR/$date' && ln -s '$DIR/$date' '$DIR/lastest'; fi;"
+		#rsync --delete-excluded --prune-empty-dirs --archive -e "ssh -p $rPort" -F --link-dest="$DIR/lastest" ./ $rUser@$rServer:$DIR/$date/
+		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
+	#fi;
+	# rsync --bwlimit=100 -avzhe ssh /user/home/documents/ root@192.168.0.101:/root/documents/
+
+#sshfs linaro@192.168.1.37:3700/HDD $DIR
