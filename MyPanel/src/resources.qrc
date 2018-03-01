@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>lang/ru_RU.qm</file>
+        <file>img/apply.png</file>
+        <file>img/exit.png</file>
+        <file>img/trash.png</file>
+        <file>img/system.png</file>
+        <file>img/wallpapers.png</file>
+        <file>img/terminal.png</file>
+        <file>img/terminalCom.png</file>
+        <file>img/save.png</file>
+        <file>img/monitor.png</file>
+    </qresource>
+</RCC>
