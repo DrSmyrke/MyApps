@@ -61,14 +61,17 @@ if [ $1 = "-h" ];then
 	echo "s31 - Enter password"
 	echo "s32 - Crypt ~/passwd"
 	echo "s33 - Current day"
-    echo "s34 - Install QT DEV"
+    echo "s34 - Install DEV Packets"
 	echo "s35 - Generate SSH RSA key in current folder"
 	echo "s36 - Create 10Gb in ZIP File"
 	echo "s37 - Endless launch of the team <COMMAND>"
-	echo "s38 - BackUp folder to my server and back <home|work> <init|save>"
+	echo "s38 - Rsync <init|save> <SERVER> <PORT> <REMOTE USER>"
 	echo "s39 - Update My Time Machine (save ~/bin, ~/Docs, ~/Desktop to my server)"
 	echo "s40 - Full HOME backup to my server"
 	echo "s41 - SSH tunnel <LOCAL PORT> <REMOTE SERVER> <REMOTE PORT> <SSH SERVER CONNECT LINE>"
+	echo "s42 - List all HDD & UUID"
+	echo "s43 - Change bitVal for ~/.vine <32|64>"
+	echo "s44 - FaceControll"
 fi
 if [ $1 = "s1" ];then
 	grep -Eiwo -m1 'nvidia|amd|ati|intel' /var/log/Xorg.0.log
@@ -289,7 +292,8 @@ if [ $1 = "s33" ];then
 	calendar
 fi
 if [ $1 = "s34" ];then
-	sudo apt-get install qtcreator qt5-doc qttranslations5-l10n g++ gcc cmake qtbase5-dev git meld
+	sudo apt-get install qtcreator qt5-doc qttranslations5-l10n qttools5-dev-tools g++ gcc cmake mc qtbase5-dev git meld ghex dpkg debconf debhelper lintian
+	sudo apt-get install gcc-avr avrdude avr-libc 
 fi
 if [ $1 = "s35" ];then
 	ssh-keygen -t rsa -b 4096 -f ./ssh-new_key-rsa
@@ -302,57 +306,33 @@ if [ $1 = "s37" ];then
 fi
 #############################################################
 if [ $1 = "s38" ] || [ $1 = "s39" ] || [ $1 = "s40" ];then
-	DIR="/mnt/hdd/rsync"
-	LOCAL_DIR=~/bin
-	rUser="drsmyrke"
-	rServer="drsmyrke-home.pskovline.ru"
-	rHomeServer="192.168.1.73"
-	rPort=3700
+	rServer=$3
+	rPort=$4
+	rUser=$5
+	DIR="/mnt/hddShare/rsync"
 	date=$(date --iso-8601=seconds)
 fi
 function rsyncCmd(){
 	rsync -azpgtlF --delete-excluded --prune-empty-dirs -e "ssh -p $rPort" $1 $2
 }
 if [ $1 = "s38" ];then
-	if [ $2 = "home" ];then
-		if [ $3 = "init" ];then
-			rsyncCmd $rUser@$rHomeServer:$DIR/.mozilla ~
-			rsyncCmd $rUser@$rHomeServer:$DIR/Templates ~
-			rsyncCmd $rUser@$rHomeServer:$DIR/Images ~
-			rsyncCmd $rUser@$rHomeServer:$DIR/.fonts ~
-			rsyncCmd $rUser@$rHomeServer:$DIR/.icons ~
-			rsyncCmd $rUser@$rHomeServer:$DIR/.themes ~
-		fi
-		if [ $3 = "save" ];then
-			rsyncCmd ~/.mozilla $rUser@$rHomeServer:$DIR/
-			rsyncCmd ~/Templates $rUser@$rHomeServer:$DIR/
-			rsyncCmd ~/Images $rUser@$rHomeServer:$DIR/
-			rsyncCmd ~/.fonts $rUser@$rHomeServer:$DIR/
-			rsyncCmd ~/.icons $rUser@$rHomeServer:$DIR/
-			rsyncCmd ~/.themes $rUser@$rHomeServer:$DIR/
-		fi
+	if [ $2 = "init" ];then
+		rsyncCmd $rUser@$rServer:$DIR/Templates ~
+		rsyncCmd $rUser@$rServer:$DIR/Images ~
+		rsyncCmd $rUser@$rServer:$DIR/.fonts ~
+		rsyncCmd $rUser@$rServer:$DIR/.icons ~
+		rsyncCmd $rUser@$rServer:$DIR/.themes ~
+		rsyncCmd $rUser@$rServer:$DIR/Musik ~
 	fi
-	if [ $2 = "work" ];then
-		if [ $3 = "init" ];then
-			rsyncCmd $rUser@$rServer:$DIR/.mozilla ~
-			rsyncCmd $rUser@$rServer:$DIR/Templates ~
-			rsyncCmd $rUser@$rServer:$DIR/Images ~
-			rsyncCmd $rUser@$rServer:$DIR/.fonts ~
-			rsyncCmd $rUser@$rServer:$DIR/.icons ~
-			rsyncCmd $rUser@$rServer:$DIR/.themes ~
-		fi
-		if [ $3 = "save" ];then
-			rsyncCmd ~/.mozilla $rUser@$rServer:$DIR/
-			rsyncCmd ~/Templates $rUser@$rServer:$DIR/
-			rsyncCmd ~/Images $rUser@$rServer:$DIR/
-			rsyncCmd ~/.fonts $rUser@$rServer:$DIR/
-			rsyncCmd ~/.icons $rUser@$rServer:$DIR/
-			rsyncCmd ~/.themes $rUser@$rServer:$DIR/
-			rsyncCmd ~/.ssh $rUser@$rServer:$DIR/work
-			rsyncCmd ~/Desktop/Projects $rUser@$rServer:$DIR/work
-		fi
+	if [ $2 = "save" ];then
+		rsyncCmd ~/Templates $rUser@$rServer:$DIR/
+		rsyncCmd ~/Images $rUser@$rServer:$DIR/
+		rsyncCmd ~/.fonts $rUser@$rServer:$DIR/
+		rsyncCmd ~/.icons $rUser@$rServer:$DIR/
+		rsyncCmd ~/.themes $rUser@$rServer:$DIR/
+		rsyncCmd ~/Musik $rUser@$rServer:$DIR/
 	fi
-	notify-send "Sync $2 $3" "complete"
+	notify-send "Sync $2" "complete"
 fi
 if [ $1 = "s39" ];then
 	ssh $rUser@$rHomeServer -p $rPort "if [ -d $DIR ];then mkdir '$DIR/$date'; if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
@@ -369,19 +349,26 @@ fi
 if [ $1 = "s41" ];then
 	ssh -L 127.0.0.1:$1:$2:$3 $4
 fi
-#if [ $1 = "s38" ];then
-#	cd ~/Desktop/src2
-#	rsync -avz -e "ssh -p $rPort" $rUser@$rServer:$DIR/latest/ ./
-#fi
-	#if [ -d $LOCAL_DIR ];then
-		#cd $LOCAL_DIR
-		#
-		#
+if [ $1 = "s42" ];then
+	ls -l /dev/disk/by-uuid
+	sudo blkid
+fi
+if [ $1 = "s43" ];then
+	if [ $2 = "32" ];then
+		rm -r ~/.wine
+		WINEARCH=win32 WINEPREFIX=~/.wine winecfg
+	fi
+	if [ $2 = "64" ];then
+		rm -r ~/.wine
+		WINEARCH=win64 WINEPREFIX=~/.wine winecfg
+	fi
+fi
+if [ $1 = "s44" ];then
+	cmd=$(date +\%Y-\%m-\%d-\%H-\%M-\%S)
+	if [ ! -d "~/.FaceControl" ]; then mkdir ~/.FaceControl; fi;
+	ffmpeg -f video4linux2 -s 640x480 -i /dev/video0 -f image2 "~/.FaceControl/$cmd.jpg"
+fi
 
-		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then test -L '$DIR/lastest' || mkdir '$DIR/$date' && ln -s '$DIR/$date' '$DIR/lastest'; fi;"
-		#rsync --delete-excluded --prune-empty-dirs --archive -e "ssh -p $rPort" -F --link-dest="$DIR/lastest" ./ $rUser@$rServer:$DIR/$date/
-		#ssh $rUser@$rServer -p $rPort "if [ -d $DIR ];then if [ -d $DIR/lastest ];then rm '$DIR/lastest'; fi; ln -s '$DIR/$date' '$DIR/lastest'; fi;"
-	#fi;
-	# rsync --bwlimit=100 -avzhe ssh /user/home/documents/ root@192.168.0.101:/root/documents/
 
-#sshfs linaro@192.168.1.37:3700/HDD $DIR
+
+exit 0
