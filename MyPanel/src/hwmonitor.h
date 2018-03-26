@@ -36,6 +36,7 @@ struct UiData{
 	QString memTotal = "0 b";
 	QString swapUsed = "0 b";
 	QString swapTotal = "0 b";
+	std::vector<QString> swaps;
 	std::vector<Iface> ifaces;
 	std::vector<Disk> disks;
 };

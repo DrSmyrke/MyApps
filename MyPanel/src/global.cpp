@@ -16,17 +16,12 @@ namespace app {
 		app::conf.serialPort.folowControl = settings.value("SERIAL/folowControl",app::conf.serialPort.folowControl).toInt();
 
 		app::conf.serialMonitor = settings.value("MAIN/serialMonitor",app::conf.serialMonitor).toString();
+		app::conf.swapMode = settings.value("MAIN/swapMode",app::conf.swapMode).toInt();
 
-		app::conf.sync.mode = settings.value("SYNC/mode",app::conf.sync.mode).toUInt();
-		app::conf.sync.remoteDir = settings.value("SYNC/remoteDir",app::conf.sync.remoteDir).toString();
+		app::conf.sync.saveToDir = settings.value("SYNC/saveToDir",app::conf.sync.saveToDir).toUInt();
 		app::conf.sync.user = settings.value("SYNC/user",app::conf.sync.user).toString();
 		app::conf.sync.server = settings.value("SYNC/server",app::conf.sync.server).toString();
 		app::conf.sync.port = settings.value("SYNC/port",app::conf.sync.port).toUInt();
-
-		settings.beginGroup("SYNC_DIRS");
-		app::conf.sync.dirs.clear();
-		for(auto elem:settings.childKeys()) app::conf.sync.dirs.push_back( settings.value(elem).toString() );
-		settings.endGroup();
 
 		settings.beginGroup("SYNC_SAVE_DIRS");
 		app::conf.sync.saveDirs.clear();
@@ -53,18 +48,12 @@ namespace app {
 		settings.setValue("SERIAL/folowControl",app::conf.serialPort.folowControl);
 
 		settings.setValue("MAIN/serialMonitor",app::conf.serialMonitor);
+		settings.setValue("MAIN/swapMode",app::conf.swapMode);
 
-		settings.setValue("SYNC/mode",app::conf.sync.mode);
-		settings.setValue("SYNC/remoteDir",app::conf.sync.remoteDir);
+		settings.setValue("SYNC/saveToDir",app::conf.sync.saveToDir);
 		settings.setValue("SYNC/user",app::conf.sync.user);
 		settings.setValue("SYNC/server",app::conf.sync.server);
 		settings.setValue("SYNC/port",app::conf.sync.port);
-
-		i = 0;
-		for(auto elem:app::conf.sync.dirs){
-			settings.setValue("SYNC_DIRS/" + QString::number(i),elem);
-			i++;
-		}
 
 		i = 0;
 		for(auto elem:app::conf.sync.saveDirs){
@@ -94,16 +83,6 @@ namespace mf {
 			QFile::remove( path + "/" + elem );
 		}
 		QDir().rmdir( path );
-	}
-
-	QString modeToStr(const uint8_t mode)
-	{
-		QString str;
-		switch (mode) {
-			case sync_mode_work: str = "work"; break;
-			case sync_mode_home: str = "home"; break;
-		}
-		return str;
 	}
 
 	QString getSize(const long val)

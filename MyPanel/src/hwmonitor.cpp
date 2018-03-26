@@ -112,7 +112,7 @@ void HWMonitor::getMem()
 {
 	QProcess cmd;
 	cmd.start("free -b");
-	cmd.waitForFinished(20);
+	cmd.waitForFinished(250);
 	if( cmd.bytesAvailable() > 0 ){
 		auto tmp = cmd.readAll().split('\n');
 		if( tmp.size() != 4 ) return;
@@ -125,10 +125,29 @@ void HWMonitor::getMem()
 			m_data.mem = tmpMem[2].toFloat() / ( tmpMem[1].toFloat() / 100.0 );
 		}
 		auto tmpSwap = tmp[2].split(' ');
-		if( tmpSwap.size() == 7 ){
+		if( tmpSwap.size() == 4 ){
 			m_data.swapTotal = mf::getSize( tmpSwap[1].toLong() );
 			m_data.swapUsed = mf::getSize( tmpSwap[2].toLong() );
 			m_data.swap = tmpSwap[2].toFloat() / ( tmpSwap[1].toFloat() / 100.0 );
+		}
+	}
+	// SWAPS
+	if( app::conf.swapMode == swap_mode_static ){
+		m_data.swaps.clear();
+		FILE* f = fopen("/proc/swaps","r");
+		QByteArray buff;
+		char ch;
+		uint8_t n;
+		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
+		fclose(f);
+
+		for(auto str:buff.split('\n')){
+			str.replace("	", QByteArray(" "));
+			while( str.contains( QByteArray("  ") ) ) str.replace("  ", QByteArray(" "));
+			auto data = str.split(' ');
+			if( data.size() != 5 ) continue;
+			if( !data[0].contains( QByteArray("/") ) ) continue;
+			m_data.swaps.push_back(data[0]);
 		}
 	}
 }
@@ -199,7 +218,7 @@ void HWMonitor::getDevs()
 	m_data.disks.clear();
 	QProcess cmd;
 	cmd.start("df -B 1");
-	cmd.waitForFinished(20);
+	cmd.waitForFinished(500);
 	if( cmd.bytesAvailable() > 0 ){
 		auto buff = cmd.readAll();
 		for(auto str:buff.split('\n')){

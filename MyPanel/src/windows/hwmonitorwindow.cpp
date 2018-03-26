@@ -6,7 +6,7 @@ HWMonitorWindow::HWMonitorWindow(QWidget *parent) : QMainWindow(parent)
 {
 	m_pTimer = new QTimer(this);
 		m_pTimer->setSingleShot(true);
-		m_pTimer->setInterval(2000);
+		m_pTimer->setInterval(500);
 	m_pHWMonitorWidget = new HWMonitorWidget(this);
 		m_pHWMonitorWidget->setMouseTracking(true);
 
@@ -66,6 +66,7 @@ void HWMonitorWindow::mouseReleaseEvent(QMouseEvent *event)
 void HWMonitorWindow::mouseMoveEvent(QMouseEvent *event)
 {
 	if(m_mouseClick){
+		if( m_pTimer->isActive() ) m_pTimer->stop();
 		uint8_t borderSize = 10;
 		QPointF startPos = event->screenPos();
 		this->move( event->screenPos().x() - m_xOffset, event->screenPos().y() - m_yOffset );

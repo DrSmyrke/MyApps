@@ -24,8 +24,10 @@ private:
 	QPushButton* m_pComTermB;
 	QPushButton* m_pMenuB;
 	QPushButton* m_pMonitorB;
+	QPushButton* m_pNetFoldersB;
 	NativeEventFilter* m_pNativeEventFilter;
 	QMenu* m_pMainMenu;
+	QMenu* m_pSSHMenu;
 
 	bool m_leave = false;
 	QSize m_windowSize;

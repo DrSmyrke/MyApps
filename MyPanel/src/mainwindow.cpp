@@ -4,9 +4,9 @@
 #include <QProcess>
 #include <QDir>
 #include <QFile>
+#include <QDesktopWidget>
 
 #include <QDebug>
-#include <QDesktopWidget>
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -17,11 +17,16 @@ MainWindow::MainWindow(QWidget *parent)
 	m_pSerialMonitor = new SerialMonitor(this);
 	m_pSettings = new Settings(this);
 
+	m_pSSHMenu = new QMenu("SSH",this);
 	m_pMainMenu = new QMenu(this);
 		QAction* settingsM = new QAction(tr("Settings"), this);
 		connect(settingsM,&QAction::triggered,m_pSettings,&Settings::open);
 	m_pMainMenu->addAction(settingsM);
+//		QAction* clearErrM = new QAction(tr("Clear Errors"), this);
+//		connect(clearErrM,&QAction::triggered,m_pTaskListWidget,&TaskListWidget::clear_errors);
+//	m_pMainMenu->addAction(clearErrM);
 	m_pMainMenu->addSeparator();
+	m_pMainMenu->addMenu(m_pSSHMenu);
 
 	m_pMenuB = new QPushButton(QIcon("://img/system.png"),"",this);
 	QPushButton* trashB = new QPushButton(QIcon("://img/trash.png"),"",this);
@@ -35,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
 	QPushButton* rsyncB = new QPushButton(QIcon("://img/save.png"),"",this);
 	m_pMonitorB = new QPushButton(QIcon("://img/monitor.png"),"",this);
 		m_pMonitorB->setCheckable(true);
+	m_pNetFoldersB = new QPushButton(QIcon("://img/folder-remote.png"),"",this);
 
 	QWidget* centrWidget = new QWidget(this);
 		QHBoxLayout* hBox = new QHBoxLayout();
@@ -48,14 +54,13 @@ MainWindow::MainWindow(QWidget *parent)
 		hBox->addWidget(m_pComTermB);
 		hBox->addWidget(rsyncB);
 		hBox->addWidget(m_pMonitorB);
+		hBox->addWidget(m_pNetFoldersB);
 	centrWidget->setLayout(hBox);
 
 	setCentralWidget(centrWidget);
 
 	setWindowFlags(Qt::Popup | Qt::ToolTip);
-	// setStyleSheet("QMainWindow { color: rgb(255, 255, 0); background: rgb(0, 0, 0); }");
 	setAttribute(Qt::WA_TranslucentBackground);
-	//setAutoFillBackground(true);
 	setWindowOpacity( 0.5 );
 
 	connect(m_pMenuB,&QPushButton::clicked,this,[this](){
@@ -63,6 +68,18 @@ MainWindow::MainWindow(QWidget *parent)
 		auto x = m_pMenuB->pos().x() + (app::screen.width()/2)-(m_windowSize.width()/2);
 		m_pMainMenu->show();
 		m_pMainMenu->move( x, m_windowSize.height() + 5 );
+
+		m_pSSHMenu->clear();
+		qDebug()<<QDir::homePath();
+//		FILE* f = fopen("/proc/uptime","r");
+//		QByteArray buff;
+//		char ch;
+//		uint8_t n;
+//		while( (n = fread(&ch,1,1,f) ) > 0 ){
+//			if(ch == ' ' or ch == '	') break;
+//			buff.append(ch);
+//		}
+//		fclose(f);
 	});
 	connect(trashB,&QPushButton::clicked,this,[this](){
 		QString path = QDir::homePath() + "/.local/share/Trash/files";
@@ -84,7 +101,10 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(m_pNativeEventFilter,&NativeEventFilter::activated,this,&MainWindow::slot_GlobalHotkey);
 	m_pNativeEventFilter->setShortcut();
 
-	connect(rsyncB,&QPushButton::clicked,this,[this](){ QProcess::startDetached("allinone s38 "+ mf::modeToStr(app::conf.sync.mode) +" save"); });
+	connect(rsyncB,&QPushButton::clicked,this,[this](){
+		if( app::conf.sync.server.isEmpty() or !app::conf.sync.port or app::conf.sync.user.isEmpty() ) return;
+		QProcess::startDetached( "allinone s38 save " + app::conf.sync.server + " " + QString::number(app::conf.sync.port) + " " + app::conf.sync.user );
+	});
 	connect(m_pMonitorB,&QPushButton::clicked,this,[this](bool checked){
 		if(checked){
 			m_pHWMonitorWindow->open();
@@ -94,17 +114,28 @@ MainWindow::MainWindow(QWidget *parent)
 	});
 	connect(m_pMainMenu,&QMenu::aboutToHide,this,[this](){ if( m_leave ) panelHide(); });
 
+	/*
+	#ifdef QT_DEBUG
+		m_pMonitorB->click();
+	#endif
+	#ifdef QT_RELEASE
+		m_pMonitorB->click();
+	#endif
+	*/
 	// AUTOSTART
 	for(auto elem:app::conf.autostartList) QProcess::startDetached( elem );
 
-	if( !app::conf.sync.mode or !app::conf.sync.port or app::conf.sync.remoteDir.isEmpty() or app::conf.sync.server.isEmpty() or app::conf.sync.user.isEmpty() ) m_pSettings->open();
+	QTimer::singleShot(1000,this,[this](){
+		if( app::conf.sync.server.isEmpty() or !app::conf.sync.port or app::conf.sync.user.isEmpty() ) return;
+		QProcess::startDetached( "allinone s38 init " + app::conf.sync.server + " " + QString::number(app::conf.sync.port) + " " + app::conf.sync.user );
+	});
 
 	QTimer::singleShot(3000,this,[this](){
-		//QProcess cmd;
-
-		//cmd.start();
 		m_pMonitorB->click();
 	});
+
+	//RSYNC
+
 }
 
 MainWindow::~MainWindow()
@@ -119,17 +150,18 @@ void MainWindow::getMainSize()
 	app::screen.setWidth( QApplication::desktop()->screenGeometry().width() );
 	app::screen.setHeight( QApplication::desktop()->screenGeometry().height() );
 
-	qDebug()<<QApplication::desktop()->screenGeometry();
-	qDebug()<<QApplication::desktop()->availableGeometry();
-	qDebug()<<QApplication::desktop()->screenCount();
-	qDebug()<<QApplication::desktop()->screenNumber();
-	qDebug()<<QApplication::desktop()->screenGeometry(1);
+	//qDebug()<<QApplication::desktop()->screenGeometry();
+	//qDebug()<<QApplication::desktop()->availableGeometry();
+	//qDebug()<<QApplication::desktop()->screenCount();
+	//qDebug()<<QApplication::desktop()->screenNumber();
+	//qDebug()<<QApplication::desktop()->screenGeometry(1);
 }
 
 void MainWindow::panelHide()
 {
 	getMainSize();
-	move( (app::screen.width()/2)-(m_windowSize.width()/2) , 0 - m_windowSize.height() + 5);
+	//move( (app::screen.width()/2)-(m_windowSize.width()/2) , 0 - m_windowSize.height() + 5);
+	move( (app::screen.width()/2)-(m_windowSize.width()/2) , -30);
 	setWindowOpacity( 0.5 );
 	m_leave = false;
 }
@@ -172,7 +204,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 	//Q_UNUSED(event);
 
 	getMainSize();
-	move( (app::screen.width()/2)-(m_windowSize.width()/2) ,  0 - m_windowSize.height() + 5);
+	panelHide();
 
 	QMainWindow::resizeEvent(event);
 }

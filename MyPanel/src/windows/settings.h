@@ -4,9 +4,10 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QTextEdit>
-#include <QComboBox>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QGroupBox>
+#include <QRadioButton>
 #include "global.h"
 
 class Settings : public QMainWindow
@@ -16,14 +17,13 @@ public:
 	explicit Settings(QWidget *parent = 0);
 	void open();
 private:
-	QComboBox* m_pSyncMode;
 	QTextEdit* m_pEditor;
-	QTextEdit* m_pSyncDirs;
 	QTextEdit* m_pSyncSaveDirs;
 	QLineEdit* m_pRUser;
-	QLineEdit* m_pRDir;
 	QLineEdit* m_pRemoteServer;
 	QSpinBox* m_pRemotePort;
+	QRadioButton* m_pStaticSwapB;
+	QRadioButton* m_pDynamicSwapB;
 	bool m_changeSettings = false;
 };
 

@@ -1,5 +1,6 @@
 #include "hwmonitorwidget.h"
 #include <QPainter>
+#include <QProcess>
 
 HWMonitorWidget::HWMonitorWidget(QWidget *parent) : QWidget(parent)
 {
@@ -60,17 +61,28 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 	drawParam(p,m_xParamOffset,y,"Uptime:");
 	drawValue(p,m_xVallOffset,y,m_pHWMonitor->getData().uptime);
 	y += m_defFontSize + m_yOffset;
+
 	drawParam(p,m_xParamOffset,y,"CPU:");
 	drawBar(p,m_xVallOffset,y,m_pHWMonitor->getData().cpu);
 	y += m_defFontSize + m_yOffset;
+
 	drawParam(p,m_xParamOffset,y,"RAM:");
 	drawBar(p,m_xVallOffset,y,m_pHWMonitor->getData().mem,15);
 	drawValue(p,m_xVallOffset + 80,y,m_pHWMonitor->getData().memUsed + " / " + m_pHWMonitor->getData().memTotal);
 	y += m_defFontSize + m_yOffset;
+
+	if( m_swapParam.hover ){
+		p.setBrush(QBrush(QColor(100,100,100,73)));
+		p.setPen(Qt::NoPen);
+		p.drawRect(m_xParamOffset,y + 2,this->width() - m_xParamOffset - 5,14);
+	}
 	drawParam(p,m_xParamOffset,y,"SWAP:");
+	m_swapParam.clear = ( m_pHWMonitor->getData().swap > 0 )?true:false;
+	m_swapParam.y = y;
 	drawBar(p,m_xVallOffset,y,m_pHWMonitor->getData().swap,15);
 	drawValue(p,m_xVallOffset + 80,y,m_pHWMonitor->getData().swapUsed + " / " + m_pHWMonitor->getData().swapTotal);
 	y += m_defFontSize + m_yOffset;
+
 	drawParam(p,m_xParamOffset,y,"Apps:");
 	drawValue(p,m_xVallOffset,y,m_pHWMonitor->getData().procCount);
 	y += m_defFontSize + m_yOffset;
@@ -82,7 +94,7 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 		m_ifaces[iface.name].y = y;
 		// Если мышка наведена рисуем бокс
 		if( m_ifaces[iface.name].hover ){
-			p.setBrush(QBrush(QColor(100,100,100,190)));
+			p.setBrush(QBrush(QColor(100,100,100,73)));
 			p.setPen(Qt::NoPen);
 			p.drawRect(m_xParamOffset,y + 2,this->width() - m_xParamOffset - 5,14);
 		}
@@ -114,8 +126,27 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 	/*
 	 * DISKS
 	*/
+	y += m_defFontSize + m_yOffset;
 	for(auto disk:m_pHWMonitor->getData().disks){
-		drawParam(p,m_xParamOffset,y,"[" + disk.mount.left(5) + "]");
+		QString name = disk.mount;
+		if( name != "/" ){
+			auto tmp = name.split("/");
+			if( tmp.size() > 0 ) name = tmp[tmp.size() - 1];
+			if( name.length() > 5 ) name = name.left(4) + "...";
+		}
+
+		if( name != "/" ){
+			// Записываем координату У интерфейса
+			m_disks[disk.mount].y = y;
+			// Если мышка наведена рисуем бокс
+			if( m_disks[disk.mount].hover ){
+				p.setBrush(QBrush(QColor(100,100,100,73)));
+				p.setPen(Qt::NoPen);
+				p.drawRect(m_xParamOffset,y + 2,this->width() - m_xParamOffset - 5,28);
+			}
+		}
+
+		drawParam(p,m_xParamOffset,y,"[" + name + "]");
 		drawBar(p,m_xVallOffset,y,disk.usedPrz);
 		y += m_defFontSize + m_yOffset;
 		drawParam(p,m_xParamOffset,y,"Free:");
@@ -134,6 +165,12 @@ void HWMonitorWidget::mouseMoveEvent(QMouseEvent *event)
 		elem.second.hover = false;
 		elem.second.hover = chkHoverIface(elem.second.y + 3);
 	}
+	for(auto &elem:m_disks){
+		elem.second.hover = false;
+		elem.second.hover = chkHoverDisk(elem.second.y + 3);
+	}
+
+	if( m_swapParam.clear ) m_swapParam.hover = chkHoverSwap( m_swapParam.y );
 
 	QWidget::mouseMoveEvent(event);
 }
@@ -149,6 +186,24 @@ void HWMonitorWidget::slot_mouseReleaseEvent(QMouseEvent *event)
 			break;
 		}
 	}
+	for(auto &elem:m_disks){
+		if( chkHoverDisk(elem.second.y + 3) ){
+			QProcess::startDetached("xdg-open " + elem.first);
+			find = true;
+			break;
+		}
+	}
+	if( m_swapParam.clear ){
+		if( chkHoverSwap( m_swapParam.y ) ){
+			switch (app::conf.swapMode) {
+				case swap_mode_static: QProcess::startDetached("gksu \"swapoff -a && swapon -a\" || ksudo \"swapoff -a && swapon -a\" || xterm -e \"sudo swapoff -a && sudo swapon -a\""); break;
+				case swap_mode_dynamic:QProcess::startDetached("gksu \"swapspace -e\""); break;
+			}
+			m_swapParam.hover = false;
+			find = true;
+		}
+	}
+
 
 	if( !find ){
 		m_fixed = !m_fixed;
@@ -225,6 +280,16 @@ void HWMonitorWidget::drawBar(QPainter &p, const uint16_t x, const uint16_t y, c
 }
 
 bool HWMonitorWidget::chkHoverIface(const uint16_t y)
+{
+	return (m_mouse.y() >= y && m_mouse.y() < y + 14) ? true : false;
+}
+
+bool HWMonitorWidget::chkHoverDisk(const uint16_t y)
+{
+	return (m_mouse.y() >= y && m_mouse.y() < y + 28) ? true : false;
+}
+
+bool HWMonitorWidget::chkHoverSwap(const uint16_t y)
 {
 	return (m_mouse.y() >= y && m_mouse.y() < y + 14) ? true : false;
 }

@@ -12,6 +12,16 @@ struct IfaceParam{
 	bool hideData = false;
 };
 
+struct DiskParam{
+	uint16_t y;
+	bool hover = false;
+};
+struct SwapParam{
+	uint16_t y;
+	bool hover = false;
+	bool clear = false;
+};
+
 class HWMonitorWidget : public QWidget
 {
 	Q_OBJECT
@@ -37,11 +47,15 @@ private:
 	QPoint m_mouse;
 	bool m_fixed = false;
 	std::map<QString,IfaceParam> m_ifaces;
+	std::map<QString,DiskParam> m_disks;
+	SwapParam m_swapParam;
 
 	void drawParam(QPainter &p, const uint16_t x, const uint16_t y, const QString &param);
 	void drawValue(QPainter &p, const uint16_t x, const uint16_t y, const QString &value);
 	void drawBar(QPainter &p, const uint16_t x, const uint16_t y, const float value, const uint8_t blockCount = 40);
 	bool chkHoverIface(const uint16_t y);
+	bool chkHoverDisk(const uint16_t y);
+	bool chkHoverSwap(const uint16_t y);
 };
 
 #endif // HWMONITORWIDGET_H

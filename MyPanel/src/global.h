@@ -11,8 +11,8 @@ enum{
 	key_type_R = 0x0052,
 	key_type_E = 0x0045,
 	key_type_Tilda = 0x007e,
-	sync_mode_work = 1,
-	sync_mode_home = 2,
+	swap_mode_static = 3,
+	swap_mode_dynamic = 4,
 };
 
 enum{
@@ -29,13 +29,11 @@ struct SerialPortSettings{
 };
 
 struct SyncSettings{
-	uint8_t mode = 0;
-	QString remoteDir;
 	QString user;
 	QString server;
 	uint16_t port = 22;
-	std::vector<QString> dirs;
 	std::vector<QString> saveDirs;
+	QString saveToDir;
 };
 
 struct Config{
@@ -43,6 +41,7 @@ struct Config{
 	QString serialMonitor;
 	std::vector<QString> autostartList;
 	SyncSettings sync;
+	uint8_t swapMode = swap_mode_dynamic;
 };
 
 namespace app {
@@ -55,7 +54,6 @@ namespace app {
 
 namespace mf {
 	void removeDir(const QString &path);
-	QString modeToStr(const uint8_t mode);
 	QString getSize(const long val);
 }
 
