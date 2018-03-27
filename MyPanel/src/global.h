@@ -32,8 +32,10 @@ struct SyncSettings{
 	QString user;
 	QString server;
 	uint16_t port = 22;
+	QString workDir;
 	std::vector<QString> saveDirs;
-	QString saveToDir;
+	QString personalDir;
+	bool syncOnStart = true;
 };
 
 struct Config{

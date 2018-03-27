@@ -34,8 +34,11 @@ private:
 
 	void getMainSize();
 	void panelHide();
+	void startDetached(const QString &cmd);
 private slots:
 	void slot_GlobalHotkey(const uint8_t mode, const uint16_t key);
+	void slot_syncInit();
+	void slot_syncSave();
 protected:
 	void enterEvent(QEvent *event);
 	void leaveEvent(QEvent *event);

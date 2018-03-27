@@ -18,10 +18,12 @@ namespace app {
 		app::conf.serialMonitor = settings.value("MAIN/serialMonitor",app::conf.serialMonitor).toString();
 		app::conf.swapMode = settings.value("MAIN/swapMode",app::conf.swapMode).toInt();
 
-		app::conf.sync.saveToDir = settings.value("SYNC/saveToDir",app::conf.sync.saveToDir).toUInt();
+		app::conf.sync.personalDir = settings.value("SYNC/personalDir",app::conf.sync.personalDir).toString();
 		app::conf.sync.user = settings.value("SYNC/user",app::conf.sync.user).toString();
 		app::conf.sync.server = settings.value("SYNC/server",app::conf.sync.server).toString();
+		app::conf.sync.workDir = settings.value("SYNC/workDir",app::conf.sync.workDir).toString();
 		app::conf.sync.port = settings.value("SYNC/port",app::conf.sync.port).toUInt();
+		app::conf.sync.syncOnStart = settings.value("SYNC/syncOnStart",app::conf.sync.syncOnStart).toBool();
 
 		settings.beginGroup("SYNC_SAVE_DIRS");
 		app::conf.sync.saveDirs.clear();
@@ -50,10 +52,12 @@ namespace app {
 		settings.setValue("MAIN/serialMonitor",app::conf.serialMonitor);
 		settings.setValue("MAIN/swapMode",app::conf.swapMode);
 
-		settings.setValue("SYNC/saveToDir",app::conf.sync.saveToDir);
+		settings.setValue("SYNC/personalDir",app::conf.sync.personalDir);
 		settings.setValue("SYNC/user",app::conf.sync.user);
 		settings.setValue("SYNC/server",app::conf.sync.server);
+		settings.setValue("SYNC/workDir",app::conf.sync.workDir);
 		settings.setValue("SYNC/port",app::conf.sync.port);
+		settings.setValue("SYNC/syncOnStart",app::conf.sync.syncOnStart);
 
 		i = 0;
 		for(auto elem:app::conf.sync.saveDirs){

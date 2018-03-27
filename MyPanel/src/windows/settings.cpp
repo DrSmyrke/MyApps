@@ -8,7 +8,10 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 	QPushButton* saveB = new QPushButton(tr("SAVE"),this);
 
 	m_pRemoteServer = new QLineEdit(this);
+	m_pSyncOnStart = new QCheckBox(tr("On start"),this);
 	m_pRUser = new QLineEdit(this);
+	m_pRDir = new QLineEdit(this);
+	m_pPersonalDir = new QLineEdit(this);
 	m_pRemotePort = new QSpinBox(this);
 		m_pRemotePort->setRange(1,65535);
 	m_pEditor = new QTextEdit(this);
@@ -27,6 +30,14 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 			syncConnBox->addWidget(new QLabel( tr("<b>User:</b>") ));
 			syncConnBox->addWidget(m_pRUser);
 		vBox->addLayout(syncConnBox);
+			QHBoxLayout* syncConfBox = new QHBoxLayout();
+			syncConfBox->addWidget(new QLabel( tr("<b>Sync:</b>") ));
+			syncConfBox->addWidget(m_pSyncOnStart);
+			syncConfBox->addWidget(new QLabel( tr("<b>Work dir:</b>") ));
+			syncConfBox->addWidget(m_pRDir);
+			syncConfBox->addWidget(new QLabel( tr("<b>Personal dir:</b>") ));
+			syncConfBox->addWidget(m_pPersonalDir);
+		vBox->addLayout(syncConfBox);
 			QHBoxLayout* syncDirsBox = new QHBoxLayout();
 			syncDirsBox->addWidget(new QLabel( tr("<b>Sync save dirs:</b>") ));
 			syncDirsBox->addWidget(m_pSyncSaveDirs);
@@ -49,7 +60,7 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 	centrWidget->setLayout(vBox);
 
 	setCentralWidget(centrWidget);
-	setMinimumSize(640,480);
+	setMinimumSize(700,480);
 	setWindowTitle(tr("Settings"));
 
 	connect(m_pEditor,&QTextEdit::textChanged,this,[this]{ m_changeSettings = true; });
@@ -65,6 +76,9 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 			app::conf.sync.server = m_pRemoteServer->text();
 			app::conf.sync.user = m_pRUser->text();
 			app::conf.sync.port = m_pRemotePort->value();
+			app::conf.sync.workDir = m_pRDir->text();
+			app::conf.sync.personalDir = m_pPersonalDir->text();
+			app::conf.sync.syncOnStart = (m_pSyncOnStart->isChecked())?true:false;
 
 			if( m_pStaticSwapB->isChecked() ) app::conf.swapMode = swap_mode_static;
 			if( m_pDynamicSwapB->isChecked() ) app::conf.swapMode = swap_mode_dynamic;
@@ -89,7 +103,10 @@ void Settings::open()
 
 	m_pRemoteServer->setText( app::conf.sync.server );
 	m_pRUser->setText( app::conf.sync.user );
+	m_pRDir->setText( app::conf.sync.workDir );
 	m_pRemotePort->setValue( app::conf.sync.port );
+	m_pPersonalDir->setText( app::conf.sync.personalDir );
+	m_pSyncOnStart->setChecked(app::conf.sync.syncOnStart);
 
 	switch (app::conf.swapMode) {
 		case swap_mode_static: m_pStaticSwapB->setChecked(true); break;

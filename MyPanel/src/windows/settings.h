@@ -8,6 +8,7 @@
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QRadioButton>
+#include <QCheckBox>
 #include "global.h"
 
 class Settings : public QMainWindow
@@ -20,8 +21,11 @@ private:
 	QTextEdit* m_pEditor;
 	QTextEdit* m_pSyncSaveDirs;
 	QLineEdit* m_pRUser;
+	QLineEdit* m_pRDir;
+	QLineEdit* m_pPersonalDir;
 	QLineEdit* m_pRemoteServer;
 	QSpinBox* m_pRemotePort;
+	QCheckBox* m_pSyncOnStart;
 	QRadioButton* m_pStaticSwapB;
 	QRadioButton* m_pDynamicSwapB;
 	bool m_changeSettings = false;

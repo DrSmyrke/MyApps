@@ -30,9 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	m_pMenuB = new QPushButton(QIcon("://img/system.png"),"",this);
 	QPushButton* trashB = new QPushButton(QIcon("://img/trash.png"),"",this);
-	QPushButton* wallpB = new QPushButton(QIcon("://img/wallpapers.png"),"",this);
 	QPushButton* winKillerB = new QPushButton(QIcon("://img/exit.png"),"",this);
-	QPushButton* execB = new QPushButton(QIcon("://img/apply.png"),"",this);
 	m_pComTermB = new QPushButton(QIcon("://img/terminalCom.png"),"",this);
 		m_pComTermB->setCheckable(true);
 	m_pNativeEventFilter = new NativeEventFilter(this);
@@ -48,9 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
 			hBox->setMargin(1);
 		hBox->addWidget(m_pMenuB);
 		hBox->addWidget(trashB);
-		hBox->addWidget(wallpB);
 		hBox->addWidget(winKillerB);
-		hBox->addWidget(execB);
 		hBox->addWidget(m_pComTermB);
 		hBox->addWidget(rsyncB);
 		hBox->addWidget(m_pMonitorB);
@@ -85,9 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
 		QString path = QDir::homePath() + "/.local/share/Trash/files";
 		mf::removeDir(path);
 	});
-	connect(wallpB,&QPushButton::clicked,this,[this](){ QProcess::startDetached("AutoWallpapers.Зефште"); });
-	connect(winKillerB,&QPushButton::clicked,this,[this](){ QProcess::startDetached("xkill"); });
-	connect(execB,&QPushButton::clicked,this,[this](){ slot_GlobalHotkey(key_mode_ctrl,key_type_E); });
+	connect(winKillerB,&QPushButton::clicked,this,[this](){ startDetached("xkill"); });
 	connect(m_pComTermB,&QPushButton::clicked,this,[this](bool checked){
 		if(checked){
 			getMainSize();
@@ -101,10 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(m_pNativeEventFilter,&NativeEventFilter::activated,this,&MainWindow::slot_GlobalHotkey);
 	m_pNativeEventFilter->setShortcut();
 
-	connect(rsyncB,&QPushButton::clicked,this,[this](){
-		if( app::conf.sync.server.isEmpty() or !app::conf.sync.port or app::conf.sync.user.isEmpty() ) return;
-		QProcess::startDetached( "allinone s38 save " + app::conf.sync.server + " " + QString::number(app::conf.sync.port) + " " + app::conf.sync.user );
-	});
+	connect(rsyncB,&QPushButton::clicked,this,&MainWindow::slot_syncSave);
 	connect(m_pMonitorB,&QPushButton::clicked,this,[this](bool checked){
 		if(checked){
 			m_pHWMonitorWindow->open();
@@ -123,12 +114,9 @@ MainWindow::MainWindow(QWidget *parent)
 	#endif
 	*/
 	// AUTOSTART
-	for(auto elem:app::conf.autostartList) QProcess::startDetached( elem );
+	for(auto elem:app::conf.autostartList) startDetached( elem );
 
-	QTimer::singleShot(1000,this,[this](){
-		if( app::conf.sync.server.isEmpty() or !app::conf.sync.port or app::conf.sync.user.isEmpty() ) return;
-		QProcess::startDetached( "allinone s38 init " + app::conf.sync.server + " " + QString::number(app::conf.sync.port) + " " + app::conf.sync.user );
-	});
+	QTimer::singleShot(1000,this,&MainWindow::slot_syncInit);
 
 	QTimer::singleShot(3000,this,[this](){
 		m_pMonitorB->click();
@@ -166,11 +154,64 @@ void MainWindow::panelHide()
 	m_leave = false;
 }
 
+void MainWindow::startDetached(const QString &cmd)
+{
+	QProcess::startDetached( cmd  );
+}
+
 void MainWindow::slot_GlobalHotkey(const uint8_t mode, const uint16_t key)
 {
 	switch (key) {
-		case key_type_E: if(mode == key_mode_ctrl) QProcess::startDetached("myexec"); break;
-		case key_type_Tilda: if(mode == key_mode_ctrl) QProcess::startDetached("exo-open --working-directory " + QDir::homePath() + " --launch TerminalEmulator"); break;
+		case key_type_E: if(mode == key_mode_ctrl) startDetached("myexec"); break;
+		case key_type_Tilda: if(mode == key_mode_ctrl) startDetached("exo-open --working-directory " + QDir::homePath() + " --launch TerminalEmulator"); break;
+	}
+}
+
+void MainWindow::slot_syncInit()
+{
+	if( !app::conf.sync.syncOnStart ) return;
+	if( app::conf.sync.server.isEmpty() ) return;
+	if( !app::conf.sync.port ) return;
+	if( app::conf.sync.user.isEmpty() ) return;
+	if( app::conf.sync.workDir.isEmpty() ) return;
+
+	std::vector<QString> data;
+	data.push_back("Images");
+	data.push_back("Musik");
+
+	for(auto elem:data){
+		QString dir = app::conf.sync.user + "@" + app::conf.sync.server + ":" + app::conf.sync.workDir + "/" + elem;
+		QString cmd = "rsync -azpgtlF --delete-excluded --prune-empty-dirs -e \"ssh -p " + QString::number(app::conf.sync.port) + "\" " + dir + " " + QDir::homePath();
+		startDetached( cmd );
+	}
+	//	startDetached( "allinone s38 init " + app::conf.sync.server + " " + QString::number(app::conf.sync.port) + " " + app::conf.sync.user );
+}
+
+void MainWindow::slot_syncSave()
+{
+	if( !app::conf.sync.syncOnStart ) return;
+	if( app::conf.sync.server.isEmpty() ) return;
+	if( !app::conf.sync.port ) return;
+	if( app::conf.sync.user.isEmpty() ) return;
+	if( app::conf.sync.workDir.isEmpty() ) return;
+
+	std::vector<QString> data;
+	data.push_back("Images");
+	data.push_back("Musik");
+
+	for(auto elem:data){
+		QString dir = app::conf.sync.user + "@" + app::conf.sync.server + ":" + app::conf.sync.workDir + "/";
+		QString cmd = "rsync -azpgtlF --delete-excluded --prune-empty-dirs -e \"ssh -p " + QString::number(app::conf.sync.port) + "\" " + QDir::homePath() + "/" + elem + " " + dir;
+		startDetached( cmd );
+	}
+
+	if( app::conf.sync.personalDir.isEmpty() ) return;
+	if( app::conf.sync.saveDirs.size() == 0 ) return;
+
+	for(auto elem:app::conf.sync.saveDirs){
+		QString dir = app::conf.sync.user + "@" + app::conf.sync.server + ":" + app::conf.sync.workDir + "/" + app::conf.sync.personalDir + "/";
+		QString cmd = "rsync -azpgtlF --delete-excluded --prune-empty-dirs -e \"ssh -p " + QString::number(app::conf.sync.port) + "\" " + QDir::homePath() + "/" + elem + " " + dir;
+		startDetached( cmd );
 	}
 }
 
