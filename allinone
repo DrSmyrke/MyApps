@@ -62,7 +62,7 @@ case $1 in
 	echo "s31 - SSH tunnel <LOCAL PORT> <REMOTE SERVER> <REMOTE PORT> <SSH SERVER CONNECT LINE>"
 	echo "s32 - List all HDD & UUID"
 	echo "s33 - Change bitVal for ~/.vine <32|64>"
-    echo "s34 - "
+    echo "s34 - Network activity"
 	echo "s35 - "
 	echo "s36 - "
 	echo "s37 - "
@@ -220,6 +220,8 @@ case $1 in
 		fi
 	;;
 	"s34")
+		lsof -i
+		sudo netstat -uplnt
 	;;
 	"s35")
 	;;

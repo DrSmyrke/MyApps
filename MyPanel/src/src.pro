@@ -32,7 +32,9 @@ SOURCES += main.cpp\
     hwmonitor.cpp \
     Net/ip.cpp \
     Net/mac.cpp \
-    Net/netif.cpp
+    Net/netif.cpp \
+    windows/execwindow.cpp \
+    process.cpp
 
 HEADERS  += mainwindow.h \
     global.h \
@@ -44,7 +46,9 @@ HEADERS  += mainwindow.h \
     hwmonitor.h \
     Net/ip.h \
     Net/mac.h \
-    Net/netif.h
+    Net/netif.h \
+    windows/execwindow.h \
+    process.h
 
 TRANSLATIONS = lang/ru_RU.ts
 

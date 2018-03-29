@@ -9,7 +9,9 @@
 #include "windows/serialmonitor.h"
 #include "windows/settings.h"
 #include "windows/hwmonitorwindow.h"
+#include "windows/execwindow.h"
 #include "nativeeventfilter.h"
+#include "process.h"
 
 class MainWindow : public QMainWindow
 {
@@ -18,6 +20,7 @@ public:
 	MainWindow(QWidget *parent = 0);
 	~MainWindow();
 private:
+	ExecWindow* m_pExecWindow;
 	HWMonitorWindow* m_pHWMonitorWindow;
 	SerialMonitor* m_pSerialMonitor;
 	Settings* m_pSettings;
@@ -28,17 +31,23 @@ private:
 	NativeEventFilter* m_pNativeEventFilter;
 	QMenu* m_pMainMenu;
 	QMenu* m_pSSHMenu;
+	QAction* m_pProcCount;
 
 	bool m_leave = false;
 	QSize m_windowSize;
+	std::vector<Process*> m_process;
 
 	void getMainSize();
 	void panelHide();
-	void startDetached(const QString &cmd);
+	void startDetached(const QString &cmd, const QStringList &args = QStringList());
+	void changeProcCounter() { m_pProcCount->setText( tr("Running threads: ") + QString::number( m_process.size() ) ); }
+signals:
+	void signal_stopAll();
 private slots:
 	void slot_GlobalHotkey(const uint8_t mode, const uint16_t key);
 	void slot_syncInit();
 	void slot_syncSave();
+	void slot_sshMenuUpdate();
 protected:
 	void enterEvent(QEvent *event);
 	void leaveEvent(QEvent *event);

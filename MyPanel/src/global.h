@@ -13,10 +13,21 @@ enum{
 	key_type_Tilda = 0x007e,
 	swap_mode_static = 3,
 	swap_mode_dynamic = 4,
+	ui_skrepka,
+	proc_status_normal,
+	proc_status_crash,
+	proc_status_exit,
 };
 
-enum{
-	ui_skrepka,
+struct SSHConfig{
+	QString host;
+	QString hostName;
+	QString user;
+	uint16_t port = 22;
+	uint16_t defaultPort = 22;
+	QString keyFile;
+	std::pair<uint16_t, QString> localForward;
+	std::vector<QString> kexAlgorithms;
 };
 
 struct SerialPortSettings{
@@ -44,6 +55,8 @@ struct Config{
 	std::vector<QString> autostartList;
 	SyncSettings sync;
 	uint8_t swapMode = swap_mode_dynamic;
+	QString sshConfDir = QDir::homePath()+"/.ssh";
+	QString sshConfig = QDir::homePath()+"/.ssh/config";
 };
 
 namespace app {

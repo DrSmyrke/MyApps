@@ -10,5 +10,6 @@
         <file>img/save.png</file>
         <file>img/monitor.png</file>
         <file>img/folder-remote.png</file>
+        <file>img/folder.png</file>
     </qresource>
 </RCC>
