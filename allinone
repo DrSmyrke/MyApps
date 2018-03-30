@@ -197,7 +197,7 @@ case $1 in
 	;;
 	"s26")	calendar	;;
 	"s27")
-		sudo apt-get install qtcreator qt5-doc qttranslations5-l10n qttools5-dev-tools g++ gcc cmake mc qtbase5-dev git meld ghex dpkg debconf debhelper
+		sudo apt-get install qtcreator qt5-doc qttranslations5-l10n qttools5-dev-tools g++ gcc cmake mc qtbase5-dev git meld ghex dpkg debconf debhelper unetbootin extlinux
 		sudo apt-get install gcc-avr avrdude avr-libc
 		sudo apt-get install gpxviewer openstreetmap-client
 	;;
