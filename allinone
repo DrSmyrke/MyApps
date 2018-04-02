@@ -63,7 +63,7 @@ case $1 in
 	echo "s32 - List all HDD & UUID"
 	echo "s33 - Change bitVal for ~/.vine <32|64>"
     echo "s34 - Network activity"
-	echo "s35 - "
+	echo "s35 - Play videofile to ASCII symbols"
 	echo "s36 - "
 	echo "s37 - "
 	;;
@@ -223,8 +223,7 @@ case $1 in
 		lsof -i
 		sudo netstat -uplnt
 	;;
-	"s35")
-	;;
+	"s35")	mplayer -vo $2	;;
 	"s36")
 	;;
 	"s37")
