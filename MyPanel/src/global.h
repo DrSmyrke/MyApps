@@ -46,7 +46,13 @@ struct SyncSettings{
 	QString workDir;
 	std::vector<QString> saveDirs;
 	QString personalDir;
-	bool syncOnStart = true;
+};
+
+struct Bookmark{
+	QString name;
+	QString path;
+	bool mount = false;
+	QString mountDir;
 };
 
 struct Config{
@@ -57,6 +63,7 @@ struct Config{
 	uint8_t swapMode = swap_mode_dynamic;
 	QString sshConfDir = QDir::homePath()+"/.ssh";
 	QString sshConfig = QDir::homePath()+"/.ssh/config";
+	std::vector<Bookmark> bookmarks;
 };
 
 namespace app {

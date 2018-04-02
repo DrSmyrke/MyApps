@@ -25,7 +25,6 @@ private:
 	QLineEdit* m_pPersonalDir;
 	QLineEdit* m_pRemoteServer;
 	QSpinBox* m_pRemotePort;
-	QCheckBox* m_pSyncOnStart;
 	QRadioButton* m_pStaticSwapB;
 	QRadioButton* m_pDynamicSwapB;
 	bool m_changeSettings = false;

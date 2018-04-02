@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     Net/mac.cpp \
     Net/netif.cpp \
     windows/execwindow.cpp \
-    process.cpp
+    process.cpp \
+    windows/bookmarkswindow.cpp
 
 HEADERS  += mainwindow.h \
     global.h \
@@ -48,9 +49,13 @@ HEADERS  += mainwindow.h \
     Net/mac.h \
     Net/netif.h \
     windows/execwindow.h \
-    process.h
+    process.h \
+    windows/bookmarkswindow.h
 
 TRANSLATIONS = lang/ru_RU.ts
 
 RESOURCES += \
     resources.qrc
+
+FORMS += \
+    mainwindow.ui

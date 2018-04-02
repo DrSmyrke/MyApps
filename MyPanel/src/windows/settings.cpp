@@ -8,7 +8,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 	QPushButton* saveB = new QPushButton(tr("SAVE"),this);
 
 	m_pRemoteServer = new QLineEdit(this);
-	m_pSyncOnStart = new QCheckBox(tr("On start"),this);
 	m_pRUser = new QLineEdit(this);
 	m_pRDir = new QLineEdit(this);
 	m_pPersonalDir = new QLineEdit(this);
@@ -31,8 +30,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 			syncConnBox->addWidget(m_pRUser);
 		vBox->addLayout(syncConnBox);
 			QHBoxLayout* syncConfBox = new QHBoxLayout();
-			syncConfBox->addWidget(new QLabel( tr("<b>Sync:</b>") ));
-			syncConfBox->addWidget(m_pSyncOnStart);
 			syncConfBox->addWidget(new QLabel( tr("<b>Work dir:</b>") ));
 			syncConfBox->addWidget(m_pRDir);
 			syncConfBox->addWidget(new QLabel( tr("<b>Personal dir:</b>") ));
@@ -78,7 +75,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 			app::conf.sync.port = m_pRemotePort->value();
 			app::conf.sync.workDir = m_pRDir->text();
 			app::conf.sync.personalDir = m_pPersonalDir->text();
-			app::conf.sync.syncOnStart = (m_pSyncOnStart->isChecked())?true:false;
 
 			if( m_pStaticSwapB->isChecked() ) app::conf.swapMode = swap_mode_static;
 			if( m_pDynamicSwapB->isChecked() ) app::conf.swapMode = swap_mode_dynamic;
@@ -106,7 +102,6 @@ void Settings::open()
 	m_pRDir->setText( app::conf.sync.workDir );
 	m_pRemotePort->setValue( app::conf.sync.port );
 	m_pPersonalDir->setText( app::conf.sync.personalDir );
-	m_pSyncOnStart->setChecked(app::conf.sync.syncOnStart);
 
 	switch (app::conf.swapMode) {
 		case swap_mode_static: m_pStaticSwapB->setChecked(true); break;

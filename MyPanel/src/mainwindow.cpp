@@ -17,12 +17,15 @@ MainWindow::MainWindow(QWidget *parent)
 	m_pSerialMonitor = new SerialMonitor(this);
 	m_pSettings = new Settings(this);
 	m_pExecWindow = new ExecWindow(this);
+	m_pBookmarksWindow = new BookmarksWindow(this);
 
 	m_pProcCount = new QAction(this);
 		m_pProcCount->setIcon( QIcon("://img/terminal.png") );
 		m_pProcCount->setEnabled(false);
 	m_pSSHMenu = new QMenu("SSH",this);
 		connect(m_pSSHMenu,&QMenu::aboutToShow,this,&MainWindow::slot_sshMenuUpdate);
+	m_pBookmarksMenu = new QMenu(tr("Bookmarks"), this);
+		m_pBookmarksMenu->setIcon( QIcon("://img/folder-remote.png") );
 	m_pMainMenu = new QMenu(this);
 		QAction* settingsM = new QAction(tr("Settings"), this);
 		connect(settingsM,&QAction::triggered,m_pSettings,&Settings::open);
@@ -32,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
 //	m_pMainMenu->addAction(clearErrM);
 	m_pMainMenu->addSeparator();
 	m_pMainMenu->addMenu(m_pSSHMenu);
+	m_pMainMenu->addMenu(m_pBookmarksMenu);
 	m_pMainMenu->addSeparator();
 	m_pMainMenu->addAction(m_pProcCount);
 
@@ -45,7 +49,6 @@ MainWindow::MainWindow(QWidget *parent)
 	QPushButton* rsyncB = new QPushButton(QIcon("://img/save.png"),"",this);
 	m_pMonitorB = new QPushButton(QIcon("://img/monitor.png"),"",this);
 		m_pMonitorB->setCheckable(true);
-	m_pNetFoldersB = new QPushButton(QIcon("://img/folder-remote.png"),"",this);
 
 	QWidget* centrWidget = new QWidget(this);
 		QHBoxLayout* hBox = new QHBoxLayout();
@@ -57,7 +60,6 @@ MainWindow::MainWindow(QWidget *parent)
 		hBox->addWidget(m_pComTermB);
 		hBox->addWidget(rsyncB);
 		hBox->addWidget(m_pMonitorB);
-		hBox->addWidget(m_pNetFoldersB);
 	centrWidget->setLayout(hBox);
 
 	setCentralWidget(centrWidget);
@@ -99,9 +101,10 @@ MainWindow::MainWindow(QWidget *parent)
 		}
 	});
 	connect(m_pMainMenu,&QMenu::aboutToHide,this,[this](){ if( m_leave ) panelHide(); });
+	connect(m_pBookmarksWindow,&BookmarksWindow::signal_saveBookmarks,this,[this](){ reloadBookmarks(); });
 
 	/*
-	#ifdef QT_DEBUG
+	#ifdef QT_DEBUG_pBookmarksWindow,&BookmarksWindow::open
 		m_pMonitorB->click();
 	#endif
 	#ifdef QT_RELEASE
@@ -118,14 +121,12 @@ MainWindow::MainWindow(QWidget *parent)
 		}
 	}
 
-	QTimer::singleShot(1000,this,&MainWindow::slot_syncInit);
-
 	QTimer::singleShot(3000,this,[this](){
 		m_pMonitorB->click();
 	});
 
-	//RSYNC
-
+	changeProcCounter();
+	reloadBookmarks();
 }
 
 MainWindow::~MainWindow()
@@ -193,6 +194,33 @@ void MainWindow::startDetached(const QString &cmd, const QStringList &args)
 	thread->start();
 	m_process.push_back(proc);
 	changeProcCounter();
+}
+
+void MainWindow::reloadBookmarks()
+{
+	m_pBookmarksMenu->clear();
+		QAction* configM = new QAction(QIcon("://img/system.png"),tr("Config"), this);
+		connect(configM,&QAction::triggered,m_pBookmarksWindow,&BookmarksWindow::open);
+	m_pBookmarksMenu->addAction(configM);
+	m_pBookmarksMenu->addSeparator();
+
+	for(auto elem:app::conf.bookmarks){
+		QAction* dirM = new QAction(QIcon("://img/folder-remote.png"),elem.name, this);
+			connect(dirM,&QAction::triggered,this,[this,elem](){
+				if( !elem.mount ){
+					startDetached("xdg-open",QStringList()<<elem.path);
+					return;
+				}else{
+					//QString path = QDir::homePath() + "/mnt";
+					//if( !QDir( path ).exists() ) QDir().mkdir( path );
+					//path = QDir::homePath() + "/mnt/" + elem.mountDir;
+					//if( !QDir( path ).exists() ) QDir().mkdir( path );
+
+					//startDetached("xdg-open",QStringList()<<path);
+				}
+			});
+		m_pBookmarksMenu->addAction(dirM);
+	}
 }
 
 void MainWindow::slot_sshMenuUpdate()
@@ -266,15 +294,35 @@ void MainWindow::slot_sshMenuUpdate()
 			}
 		}
 	}
+	if( !sshconf.host.isEmpty() ){
+		array.push_back(sshconf);
+		sshconf.host.clear();
+		sshconf.hostName.clear();
+		sshconf.keyFile.clear();
+		sshconf.port = sshconf.defaultPort;
+		sshconf.kexAlgorithms.clear();
+		sshconf.localForward.second.clear();
+		sshconf.user.clear();
+	}
 
 	for( auto elem:array ){
 		QMenu* menu = new QMenu(elem.host,this);
+			if( !elem.host.isEmpty() ){
 				QAction* actionTerm = new QAction(QIcon("://img/terminal.png"),tr("Open in terminal"), this);
-				connect(actionTerm,&QAction::triggered,this,[this,elem](){ startDetached("exo-open", QStringList()<<"--launch"<<"TerminalEmulator"<<"-e"<<"ssh"<<elem.hostName); });
-			menu->addAction(actionTerm);
+				connect(actionTerm,&QAction::triggered,this,[this,elem](){ startDetached("exo-open", QStringList()<<"--working-directory"<<QDir::homePath()<<"--launch"<<"TerminalEmulator"<<"ssh " + elem.host); });
+				menu->addAction(actionTerm);
+			}
+			if( !elem.hostName.isEmpty() and elem.port and elem.localForward.second.isEmpty() ){
+				QString path;
+				if( !elem.user.isEmpty() ){
+					path = "sftp://" + elem.user + "@" + elem.hostName + ":" + QString::number(elem.port);
+				}else{
+					path = "sftp://" + elem.hostName + ":" + QString::number(elem.port);
+				}
 				QAction* actionDir = new QAction(QIcon("://img/folder.png"),tr("Open in filemanager"), this);
-				connect(actionDir,&QAction::triggered,this,[this,elem](){ startDetached("xdg-open",QStringList()<<"ssh://"+elem.host); });
-			menu->addAction(actionDir);
+				connect(actionDir,&QAction::triggered,this,[this,elem,path](){ startDetached("xdg-open",QStringList()<<path); });
+				menu->addAction(actionDir);
+			}
 		m_pSSHMenu->addMenu(menu);
 	}
 
@@ -289,7 +337,8 @@ void MainWindow::slot_GlobalHotkey(const uint8_t mode, const uint16_t key)
 	}
 }
 
-void MainWindow::slot_syncInit()
+/*
+void MainWindow::slot_syncreloadBookmarksInit()
 {
 	if( !app::conf.sync.syncOnStart ) return;
 	if( app::conf.sync.server.isEmpty() ) return;
@@ -315,15 +364,16 @@ void MainWindow::slot_syncInit()
 	}
 	//	startDetached( "allinone s38 init " + app::conf.sync.server + " " + QString::number(app::conf.sync.port) + " " + app::conf.sync.user );
 }
+*/
 
 void MainWindow::slot_syncSave()
 {
-	if( !app::conf.sync.syncOnStart ) return;
 	if( app::conf.sync.server.isEmpty() ) return;
 	if( !app::conf.sync.port ) return;
 	if( app::conf.sync.user.isEmpty() ) return;
 	if( app::conf.sync.workDir.isEmpty() ) return;
 
+	/*
 	std::vector<QString> data;
 	data.push_back("Images");
 	data.push_back("Musik");
@@ -342,6 +392,7 @@ void MainWindow::slot_syncSave()
 		args.append(dir);
 		startDetached( "rsync", args );
 	}
+	*/
 
 	if( app::conf.sync.personalDir.isEmpty() ) return;
 	if( app::conf.sync.saveDirs.size() == 0 ) return;

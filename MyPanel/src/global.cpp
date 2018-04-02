@@ -23,7 +23,6 @@ namespace app {
 		app::conf.sync.server = settings.value("SYNC/server",app::conf.sync.server).toString();
 		app::conf.sync.workDir = settings.value("SYNC/workDir",app::conf.sync.workDir).toString();
 		app::conf.sync.port = settings.value("SYNC/port",app::conf.sync.port).toUInt();
-		app::conf.sync.syncOnStart = settings.value("SYNC/syncOnStart",app::conf.sync.syncOnStart).toBool();
 
 		settings.beginGroup("SYNC_SAVE_DIRS");
 		app::conf.sync.saveDirs.clear();
@@ -33,6 +32,20 @@ namespace app {
 		settings.beginGroup("AUTOSTART");
 		app::conf.autostartList.clear();
 		for(auto elem:settings.childKeys()) app::conf.autostartList.push_back( settings.value(elem).toString() );
+		settings.endGroup();
+
+		settings.beginGroup("BOOKMARKS");
+		app::conf.bookmarks.clear();
+		for(auto elem:settings.childKeys()){
+			auto tmp = settings.value(elem).toString().split("	");
+			if( tmp.size() < 3 ) continue;
+			Bookmark bm;
+			bm.name = tmp[0];
+			bm.path = tmp[1];
+			bm.mount = ( tmp[2].toUInt() == 1 )?true:false;
+			if( tmp.size() == 4 ) bm.mountDir = tmp[3];
+			if( !bm.name.isEmpty() and !bm.path.isEmpty() ) app::conf.bookmarks.push_back( bm );
+		}
 		settings.endGroup();
 	}
 
@@ -57,7 +70,6 @@ namespace app {
 		settings.setValue("SYNC/server",app::conf.sync.server);
 		settings.setValue("SYNC/workDir",app::conf.sync.workDir);
 		settings.setValue("SYNC/port",app::conf.sync.port);
-		settings.setValue("SYNC/syncOnStart",app::conf.sync.syncOnStart);
 
 		i = 0;
 		for(auto elem:app::conf.sync.saveDirs){
@@ -68,6 +80,19 @@ namespace app {
 		i = 0;
 		for(auto elem:app::conf.autostartList){
 			settings.setValue("AUTOSTART/" + QString::number(i),elem);
+			i++;
+		}
+
+		i = 0;
+		for(auto elem:app::conf.bookmarks){
+			QString mount = ( elem.mount )?"1":"0";
+			QString str;
+			if( !elem.mountDir.isEmpty() ){
+				str = elem.name + "	" + elem.path + "	" + mount + "	" + elem.mountDir;
+			}else{
+				str = elem.name + "	" + elem.path + "	" + mount ;
+			}
+			settings.setValue("BOOKMARKS/" + QString::number(i),str);
 			i++;
 		}
 	}
