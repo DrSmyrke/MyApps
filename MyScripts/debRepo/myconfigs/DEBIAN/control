@@ -1,0 +1,11 @@
+Package: myconfigs
+Version: 0.1.3
+Maintainer: Jura Prokofev <Smyrke2005@yandex.ru>
+Architecture: all
+Section: base
+Description: MyPersonal configurations
+Depends: dpkg, xdg-utils, udev
+Priority: standard
+Origin: http://drsmyrke-home.pskovline.ru/deb
+Installed-Size: 103
+Replaces: bash

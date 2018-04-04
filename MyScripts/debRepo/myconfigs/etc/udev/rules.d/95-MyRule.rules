@@ -1,0 +1,12 @@
+# Programator AVR USBasp
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", ATTRS{product}=="USBasp", GROUP="admin", MODE="0664"
+
+# Arduino
+ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", GROUP="admin", MODE="0664"
+
+# Com port USB
+ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303",ATTRS{product}=="USB-Serial Controller"
+#,KERNEL=="ttyUSB0",SUBSYSTEM=="tty", DRIVERS=="pl2303"
+,GROUP="drsmyrke", MODE="0664"
+
+ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", GROUP="drsmyrke", MODE="0664"

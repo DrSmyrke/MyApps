@@ -1,0 +1,20 @@
+.valgreen{
+	text-shadow:0px 0px 5px #61FF62;
+	color:#00FF03;
+}
+.valorange{
+	text-shadow:0px 0px 5px #FFB67B;
+	color:#FF7200;
+}
+.valyellow{
+	text-shadow:0px 0px 5px #EEEE73;
+	color:#F3F200;
+}
+.valfiol{
+	text-shadow:0px 0px 5px #D197FF;
+	color:#AD6BE1;
+}
+.valred{
+	text-shadow:0px 0px 5px #FF6E6B;
+	color:#FF0600;
+}
