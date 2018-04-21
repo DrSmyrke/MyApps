@@ -50,9 +50,17 @@ struct SyncSettings{
 
 struct Bookmark{
 	QString name;
+	QString type;
 	QString path;
 	bool mount = false;
 	QString mountDir;
+	bool mountOnStart = false;
+};
+
+struct Valuta{
+	float usd = 0;
+	float eur = 0;
+	QString dateUpdate;
 };
 
 struct Config{
@@ -64,6 +72,7 @@ struct Config{
 	QString sshConfDir = QDir::homePath()+"/.ssh";
 	QString sshConfig = QDir::homePath()+"/.ssh/config";
 	std::vector<Bookmark> bookmarks;
+	Valuta valuta;
 };
 
 namespace app {

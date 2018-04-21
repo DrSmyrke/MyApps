@@ -4,18 +4,21 @@
 #include <QHeaderView>
 #include <QPushButton>
 #include <QLabel>
+#include <QComboBox>
 
 BookmarksWindow::BookmarksWindow(QWidget *parent) : QMainWindow(parent)
 {
 	m_pTable = new QTableWidget(this);
-		m_pTable->setColumnCount(4);
+		m_pTable->setColumnCount(6);
 		m_pTable->setShowGrid(true);
 		m_pTable->setSelectionMode(QAbstractItemView::SingleSelection);
 		m_pTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-		m_pTable->setColumnWidth(2,50);
+		m_pTable->setColumnWidth(1,60);
+		m_pTable->setColumnWidth(3,50);
+		m_pTable->setColumnWidth(5,50);
 		//m_pTable->horizontalHeader()->setStretchLastSection(true);
 		m_pTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-		m_pTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+		m_pTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
 		//m_pTable->hideColumn(0);
 
 	QScrollArea* scrollArea = new QScrollArea(this);
@@ -42,22 +45,22 @@ BookmarksWindow::BookmarksWindow(QWidget *parent) : QMainWindow(parent)
 
 	setCentralWidget(centrWidget);
 	//setWindowFlags(Qt::Popup);
-	setFixedSize(500,240);
+	setFixedSize(600,240);
 	setWindowTitle( tr("Bookmarks") );
 
 	connect(saveB,&QPushButton::clicked,this,&BookmarksWindow::slot_save);
-	connect(addB,&QPushButton::clicked,this,[this](){ addRow("","",false,"",0); });
+	connect(addB,&QPushButton::clicked,this,[this](){ addRow("","","",false,"",0); });
 }
 
 void BookmarksWindow::open()
 {
 	if( this->isHidden() ) this->show();
 	m_pTable->clear();
-	m_pTable->setHorizontalHeaderLabels(QStringList()<<tr("Name")<<tr("Path")<<tr("Mount")<<tr("Mount point"));
+	m_pTable->setHorizontalHeaderLabels(QStringList()<<tr("Name")<<tr("Type")<<tr("Path")<<tr("Mount")<<tr("Target")<<tr("Startup"));
 	m_pTable->setRowCount( 0 );
-	addRow("","");
+	//addRow("","","");
 
-	for(auto elem:app::conf.bookmarks) addRow(elem.name, elem.path, elem.mount, elem.mountDir);
+	for(auto elem:app::conf.bookmarks) addRow(elem.name, elem.type, elem.path, elem.mount, elem.mountDir, elem.mountOnStart);
 }
 
 void BookmarksWindow::slot_save()
@@ -68,9 +71,11 @@ void BookmarksWindow::slot_save()
 	for(int i = 0; i < m_pTable->rowCount(); i++){
 		Bookmark bm;
 		bm.name = m_pTable->item(i,0)->text();
-		bm.path = m_pTable->item(i,1)->text();
-		bm.mount = ( m_pTable->item(i,2)->checkState() == Qt::Checked )?true:false;
-		bm.mountDir = m_pTable->item(i,3)->text();
+		bm.type = static_cast<QComboBox*>(m_pTable->cellWidget(i,1))->currentText();
+		bm.path = m_pTable->item(i,2)->text();
+		bm.mount = ( m_pTable->item(i,3)->checkState() == Qt::Checked )?true:false;
+		bm.mountDir = m_pTable->item(i,4)->text();
+		bm.mountOnStart = ( m_pTable->item(i,5)->checkState() == Qt::Checked )?true:false;
 		if( !bm.name.isEmpty() and !bm.path.isEmpty() ) app::conf.bookmarks.push_back( bm );
 	}
 
@@ -79,23 +84,37 @@ void BookmarksWindow::slot_save()
 	emit signal_saveBookmarks();
 }
 
-void BookmarksWindow::addRow(const QString &name, const QString &path, bool mount, const QString &mountDir, const int rowNum)
+void BookmarksWindow::addRow(const QString &name,const QString &type, const QString &path, bool mount, const QString &mountDir, bool startup, const int rowNum)
 {
 	int newRowNum = ( rowNum != -1 )?rowNum:m_pTable->rowCount();
 	m_pTable->insertRow( newRowNum );
 	m_pTable->setItem(newRowNum,0, new QTableWidgetItem( name ));
-	m_pTable->setItem(newRowNum,1, new QTableWidgetItem( path ));
+		QComboBox* typeBox = new QComboBox();
+			typeBox->addItems( QStringList()<<""<<"sftp"<<"ftp"<<"smb"<<"dav"<<"davs" );
+			typeBox->setCurrentText( type );
+	m_pTable->setCellWidget(newRowNum,1,typeBox);
+	m_pTable->setItem(newRowNum,2, new QTableWidgetItem( path ));
 
-	QTableWidgetItem *item = new QTableWidgetItem();
-	item->data(Qt::CheckStateRole);
+	QTableWidgetItem *mountFlagItem = new QTableWidgetItem();
+	mountFlagItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+	mountFlagItem->data(Qt::CheckStateRole);
 	if( mount ){
-		item->setCheckState(Qt::Checked);
+		mountFlagItem->setCheckState(Qt::Checked);
 	} else {
-		item->setCheckState(Qt::Unchecked);
+		mountFlagItem->setCheckState(Qt::Unchecked);
 	}
-	m_pTable->setItem(newRowNum,2, item);
+	m_pTable->setItem(newRowNum,3, mountFlagItem);
+	m_pTable->setItem(newRowNum,4, new QTableWidgetItem( mountDir ));
 
-	m_pTable->setItem(newRowNum,3, new QTableWidgetItem( mountDir ));
+	QTableWidgetItem *startupFlagItem = new QTableWidgetItem();
+	startupFlagItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+	startupFlagItem->data(Qt::CheckStateRole);
+	if( startup ){
+		startupFlagItem->setCheckState(Qt::Checked);
+	} else {
+		startupFlagItem->setCheckState(Qt::Unchecked);
+	}
+	m_pTable->setItem(newRowNum,5, startupFlagItem);
 
 	//m_pTable->resizeColumnsToContents();
 }

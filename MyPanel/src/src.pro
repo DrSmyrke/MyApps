@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     Net/netif.cpp \
     windows/execwindow.cpp \
     process.cpp \
-    windows/bookmarkswindow.cpp
+    windows/bookmarkswindow.cpp \
+    wget.cpp
 
 HEADERS  += mainwindow.h \
     global.h \
@@ -50,7 +51,8 @@ HEADERS  += mainwindow.h \
     Net/netif.h \
     windows/execwindow.h \
     process.h \
-    windows/bookmarkswindow.h
+    windows/bookmarkswindow.h \
+    wget.h
 
 TRANSLATIONS = lang/ru_RU.ts
 

@@ -38,13 +38,16 @@ namespace app {
 		app::conf.bookmarks.clear();
 		for(auto elem:settings.childKeys()){
 			auto tmp = settings.value(elem).toString().split("	");
-			if( tmp.size() < 3 ) continue;
+			if( tmp.size() < 4 ) continue;
+
 			Bookmark bm;
 			bm.name = tmp[0];
-			bm.path = tmp[1];
-			bm.mount = ( tmp[2].toUInt() == 1 )?true:false;
-			if( tmp.size() == 4 ) bm.mountDir = tmp[3];
-			if( !bm.name.isEmpty() and !bm.path.isEmpty() ) app::conf.bookmarks.push_back( bm );
+			bm.type = tmp[1];
+			bm.path = tmp[2];
+			bm.mount = ( tmp[3].toUInt() == 1 )?true:false;
+			if( tmp.size() >= 5 ) bm.mountDir = tmp[4];
+			if( tmp.size() >= 6 ) bm.mountOnStart = ( tmp[5].toUInt() == 1 )?true:false;
+			if( !bm.name.isEmpty() and !bm.type.isEmpty() and !bm.path.isEmpty() ) app::conf.bookmarks.push_back( bm );
 		}
 		settings.endGroup();
 	}
@@ -86,11 +89,12 @@ namespace app {
 		i = 0;
 		for(auto elem:app::conf.bookmarks){
 			QString mount = ( elem.mount )?"1":"0";
+			QString mountOnStart = ( elem.mountOnStart )?"1":"0";
 			QString str;
-			if( !elem.mountDir.isEmpty() ){
-				str = elem.name + "	" + elem.path + "	" + mount + "	" + elem.mountDir;
+			if( !elem.mountDir.isEmpty() and elem.mount ){
+				str = elem.name + "	" + elem.type + "	" + elem.path + "	" + mount + "	" + elem.mountDir + "	" + mountOnStart;
 			}else{
-				str = elem.name + "	" + elem.path + "	" + mount ;
+				str = elem.name + "	" + elem.type + "	" + elem.path + "	" + mount ;
 			}
 			settings.setValue("BOOKMARKS/" + QString::number(i),str);
 			i++;

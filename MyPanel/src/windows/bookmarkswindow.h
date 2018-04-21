@@ -20,7 +20,7 @@ private slots:
 private:
 	QTableWidget* m_pTable;
 
-	void addRow(const QString &name, const QString &path, bool mount = false, const QString &mountDir = QString(), const int rowNum = -1);
+	void addRow(const QString &name,const QString &type, const QString &path, bool mount = false, const QString &mountDir = QString(), bool startup = false, const int rowNum = -1);
 };
 
 #endif // BOOKMARKSWINDOW_H

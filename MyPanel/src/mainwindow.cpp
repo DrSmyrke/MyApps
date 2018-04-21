@@ -72,7 +72,8 @@ MainWindow::MainWindow(QWidget *parent)
 		getMainSize();
 		auto x = m_pMenuB->pos().x() + (app::screen.width()/2)-(m_windowSize.width()/2);
 		m_pMainMenu->show();
-		m_pMainMenu->move( x, m_windowSize.height() + 5 );
+		m_pMainMenu->move( x, 10 );
+		reloadBookmarks();
 	});
 	connect(trashB,&QPushButton::clicked,this,[this](){
 		QString path = QDir::homePath() + "/.local/share/Trash/files";
@@ -100,8 +101,8 @@ MainWindow::MainWindow(QWidget *parent)
 			m_pHWMonitorWindow->close();
 		}
 	});
-	connect(m_pMainMenu,&QMenu::aboutToHide,this,[this](){ if( m_leave ) panelHide(); });
 	connect(m_pBookmarksWindow,&BookmarksWindow::signal_saveBookmarks,this,[this](){ reloadBookmarks(); });
+	connect(m_pExecWindow,&ExecWindow::signal_start,this,&MainWindow::startDetached);
 
 	/*
 	#ifdef QT_DEBUG_pBookmarksWindow,&BookmarksWindow::open
@@ -123,6 +124,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 	QTimer::singleShot(3000,this,[this](){
 		m_pMonitorB->click();
+
+		//automount bookmarks
+		auto list = getMountList();
+		for(auto elem:app::conf.bookmarks){
+			if( elem.mount and !elem.mountDir.isEmpty() and elem.mountOnStart ){
+				QString path = QDir::homePath() + "/mnt/" + elem.mountDir;
+				bool mountF = false;
+				if( list.find(elem.path) != list.end() ){
+					if( list.at(elem.path) == path ) mountF = true;
+				}
+				if( !mountF ) mount(elem.type, elem.path, path);
+			}
+		}
 	});
 
 	changeProcCounter();
@@ -155,7 +169,6 @@ void MainWindow::panelHide()
 	//move( (app::screen.width()/2)-(m_windowSize.width()/2) , 0 - m_windowSize.height() + 5);
 	move( (app::screen.width()/2)-(m_windowSize.width()/2) , -30);
 	setWindowOpacity( 0.5 );
-	m_leave = false;
 }
 
 void MainWindow::startDetached(const QString &cmd, const QStringList &args)
@@ -204,23 +217,79 @@ void MainWindow::reloadBookmarks()
 	m_pBookmarksMenu->addAction(configM);
 	m_pBookmarksMenu->addSeparator();
 
-	for(auto elem:app::conf.bookmarks){
-		QAction* dirM = new QAction(QIcon("://img/folder-remote.png"),elem.name, this);
-			connect(dirM,&QAction::triggered,this,[this,elem](){
-				if( !elem.mount ){
-					startDetached("xdg-open",QStringList()<<elem.path);
-					return;
-				}else{
-					//QString path = QDir::homePath() + "/mnt";
-					//if( !QDir( path ).exists() ) QDir().mkdir( path );
-					//path = QDir::homePath() + "/mnt/" + elem.mountDir;
-					//if( !QDir( path ).exists() ) QDir().mkdir( path );
+	auto list = getMountList();
 
-					//startDetached("xdg-open",QStringList()<<path);
+	//drawBookmarks
+	for(auto elem:app::conf.bookmarks){
+		if( elem.mount ){
+			QString path = QDir::homePath() + "/mnt/" + elem.mountDir;
+			bool mountF = false;
+			if( list.find(elem.path) != list.end() ){
+				if( list.at(elem.path) == path ) mountF = true;
+			}
+			QMenu* dirM  = new QMenu(elem.name, this);
+				dirM->setIcon( QIcon("://img/folder-remote.png") );
+				if( !mountF ){
+					QAction* dirAction = new QAction( tr("Mount"), this);
+					connect(dirAction,&QAction::triggered,this,[this, elem, path](){
+						//TDOD: make alert
+						if( elem.mountDir.isEmpty() ) return;
+						mount(elem.type, elem.path, path);
+					});
+					dirM->addAction( dirAction );
+				}else{
+					QAction* dirAction = new QAction( tr("Umount"), this);
+					connect(dirAction,&QAction::triggered,this,[this, elem, path](){
+						//TDOD: make alert
+						if( !QDir( path ).exists() ) return;
+						startDetached("fusermount",QStringList()<<"-u"<<path);
+					});
+					dirM->addAction( dirAction );
 				}
-			});
-		m_pBookmarksMenu->addAction(dirM);
+			//if( mountF ){
+			//	connect(dirM,&QMenu::triggered,this,[this,elem](){ startDetached("xdg-open",QStringList()<<elem.path); });
+			//}
+			m_pBookmarksMenu->addMenu( dirM );
+		}else{
+			QAction* dirM = new QAction(QIcon("://img/folder-remote.png"),elem.name, this);
+			connect(dirM,&QAction::triggered,this,[this,elem](){ startDetached("xdg-open",QStringList()<<elem.type + "://" + elem.path); });
+			m_pBookmarksMenu->addAction(dirM);
+		}
 	}
+}
+
+void MainWindow::mount(const QString &type, const QString &remotePath, const QString &path)
+{
+	if( !QDir( path ).exists() ) QDir().mkpath( path );
+	//TDOD: make alert
+	if( !QDir( path ).exists() ) return;
+
+	//qDebug()<<elem.path<<elem.type<<path;
+	if(type == "sftp"){
+		startDetached("sshfs",QStringList()<<remotePath<<path);
+	}
+}
+
+std::map<QString, QString> MainWindow::getMountList()
+{
+	//read mount list
+	FILE* f = fopen("/proc/self/mounts","r");
+	QByteArray buff;
+	char ch;
+	uint8_t n;
+	while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
+	fclose(f);
+
+	std::map<QString, QString> list;
+	for(auto str:buff.split('\n')){
+		str.replace("	", QByteArray(" "));
+		while( str.contains( QByteArray("  ") ) ) str.replace("  ", QByteArray(" "));
+		auto data = str.split(' ');
+		if( data.size() < 2 ) continue;
+		list[ data[0] ] = data[1];
+	}
+
+	return list;
 }
 
 void MainWindow::slot_sshMenuUpdate()
@@ -429,13 +498,8 @@ void MainWindow::leaveEvent(QEvent *event)
 {
 	//Q_UNUSED(event);
 
-	m_leave = true;
-
-	if(!m_pMainMenu->isVisible()){
-		// if show main menu
-		panelHide();
-		m_pExecWindow->move( (app::screen.width()/2)-(this->width()/2) ,  this->pos().y() + this->height() + 5);
-	}
+	panelHide();
+	m_pExecWindow->move( (app::screen.width()/2)-(this->width()/2) ,  this->pos().y() + this->height() + 5);
 
 	QMainWindow::leaveEvent(event);
 }
@@ -446,7 +510,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 	getMainSize();
 	panelHide();
-	m_pExecWindow->move( (app::screen.width()/2)-(this->width()/2) ,  this->pos().y() + this->height() + 5);
+	m_pExecWindow->move( (app::screen.width()/2)-(m_pExecWindow->width()/2) ,  this->pos().y() + this->height() + 5);
 
 	QMainWindow::resizeEvent(event);
 }

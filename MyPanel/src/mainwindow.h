@@ -44,6 +44,9 @@ private:
 	void startDetached(const QString &cmd, const QStringList &args = QStringList());
 	void changeProcCounter() { m_pProcCount->setText( tr("Running threads: ") + QString::number( m_process.size() ) ); }
 	void reloadBookmarks();
+	void mount(const QString &type, const QString &remotePath, const QString &path);
+
+	std::map<QString, QString> getMountList();
 signals:
 	void signal_stopAll();
 private slots:

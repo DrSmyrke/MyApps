@@ -1,6 +1,7 @@
 #include "serialmonitor.h"
 #include <QLayout>
 #include <QLabel>
+#include <QScrollBar>
 
 SerialMonitor::SerialMonitor(QWidget *parent) : QMainWindow(parent)
 {
@@ -87,7 +88,7 @@ SerialMonitor::SerialMonitor(QWidget *parent) : QMainWindow(parent)
 	centrWidget->setLayout(vBox);
 
 	setCentralWidget(centrWidget);
-	setWindowFlags(Qt::Popup | Qt::ToolTip);
+	setWindowFlags(Qt::Popup);
 	setFixedSize(320,240);
 
 	connect(clearB,&QPushButton::clicked,this,[this](){
@@ -110,6 +111,7 @@ SerialMonitor::SerialMonitor(QWidget *parent) : QMainWindow(parent)
 			m_colCounter = 0;
 			m_symCounter = 0;
 			m_pConsole->insertPlainText( printSym(tmp) );
+			m_pConsole->verticalScrollBar()->setValue( m_pConsole->verticalScrollBar()->maximum() );
 		}
 	});
 	connect(settingsB,&QPushButton::clicked,this,[this](bool checked){
@@ -168,6 +170,7 @@ void SerialMonitor::slot_serialPortReadData()
 
 		if(!m_hexmode){
 			m_pConsole->insertPlainText(data);
+			m_pConsole->verticalScrollBar()->setValue( m_pConsole->verticalScrollBar()->maximum() );
 		}else{
 			printHex( data );
 		}
@@ -329,5 +332,6 @@ void SerialMonitor::printHex(QByteArray &data)
 			m_colCounter = 0;
 		}
 	}
+	m_pConsole->verticalScrollBar()->setValue( m_pConsole->verticalScrollBar()->maximum() );
 }
 

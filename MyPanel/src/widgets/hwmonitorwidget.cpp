@@ -77,7 +77,7 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 		p.drawRect(m_xParamOffset,y + 2,this->width() - m_xParamOffset - 5,14);
 	}
 	drawParam(p,m_xParamOffset,y,"SWAP:");
-	m_swapParam.clear = ( m_pHWMonitor->getData().swapTotal > 0 )?true:false;
+	m_swapParam.clear = ( m_pHWMonitor->getData().swap >= 0 )?true:false;
 	m_swapParam.y = y;
 	drawBar(p,m_xVallOffset,y,m_pHWMonitor->getData().swap,15);
 	drawValue(p,m_xVallOffset + 80,y,m_pHWMonitor->getData().swapUsed + " / " + m_pHWMonitor->getData().swapTotal);
