@@ -1,5 +1,4 @@
 #include "wget.h"
-
 #include <QHostInfo>
 
 Wget::Wget(QObject *parent) : QObject(parent)
@@ -7,14 +6,11 @@ Wget::Wget(QObject *parent) : QObject(parent)
 	m_pSocket = new QTcpSocket(this);
 	connect(m_pSocket,&QTcpSocket::stateChanged,this,[this](const QAbstractSocket::SocketState state){
 		if( state == QAbstractSocket::UnconnectedState ) {
-			if( m_buffer.size() > 0 ){
-				parsHead(m_buffer);
-				emit signal_complete();
-			}
+			if( m_buffer.size() > 0 ) parsHead(m_buffer);
 			m_buffer.clear();
 			m_running = false;
+			emit signal_complete();
 		}
-		//if( state == QAbstractSocket::ConnectedState ) sendFunc(pkt_type_connection,pkt_param_welcome);
 	});
 	connect(m_pSocket,&QTcpSocket::readyRead,this,&Wget::slot_readyRead);
 }
@@ -59,14 +55,14 @@ void Wget::get(QString url)
 
 	if( m_pSocket->isOpen() ){
 		QByteArray ba;
-		ba.append("GET " + path + " HTTP/1.1\r\nHost: " + addr + ":" + QString::number(port) + "\r\nConnection: close\r\n\r\n");
-		m_pSocket->write(ba);
+		ba.append("GET " + path + " HTTP/1.1\r\nHost: " + addr + ":" + QString::number(port) + "\r\nConnection: close\r\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0\r\n\r\n");
+		int r = m_pSocket->write(ba);
+		m_pSocket->waitForBytesWritten(100);
 		m_running = true;
 	}else{
 		emit signal_complete();
 	}
 }
-
 void Wget::slot_readyRead()
 {
 	while(m_pSocket->bytesAvailable()) m_buffer.append( m_pSocket->read(1024) );

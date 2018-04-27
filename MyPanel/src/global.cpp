@@ -127,5 +127,4 @@ namespace mf {
 		if(val >= 1048576000) str =  QString::number(val/1073741824.0).left(5) + " Gb";
 		return str;
 	}
-
 }

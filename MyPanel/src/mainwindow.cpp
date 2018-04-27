@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 	m_pExecWindow = new ExecWindow(this);
 	m_pBookmarksWindow = new BookmarksWindow(this);
 
+	m_pInetDataUpdate = new InetDataUpdate(this);
+
 	m_pProcCount = new QAction(this);
 		m_pProcCount->setIcon( QIcon("://img/terminal.png") );
 		m_pProcCount->setEnabled(false);
@@ -122,6 +124,9 @@ MainWindow::MainWindow(QWidget *parent)
 		}
 	}
 
+	QTimer::singleShot(1000,this,[this](){
+		m_pInetDataUpdate->updateAll();
+	});
 	QTimer::singleShot(3000,this,[this](){
 		m_pMonitorB->click();
 

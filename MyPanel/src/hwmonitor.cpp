@@ -218,7 +218,7 @@ void HWMonitor::getDevs()
 	m_data.disks.clear();
 	QProcess cmd;
 	cmd.start("df -B 1");
-	cmd.waitForFinished(750);
+	cmd.waitForFinished(1500);
 	if( cmd.bytesAvailable() > 0 ){
 		auto buff = cmd.readAll();
 		for(auto str:buff.split('\n')){

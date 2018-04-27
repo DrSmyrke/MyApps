@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     windows/execwindow.cpp \
     process.cpp \
     windows/bookmarkswindow.cpp \
-    wget.cpp
+    wget.cpp \
+    inetdataupdate.cpp
 
 HEADERS  += mainwindow.h \
     global.h \
@@ -52,7 +53,8 @@ HEADERS  += mainwindow.h \
     windows/execwindow.h \
     process.h \
     windows/bookmarkswindow.h \
-    wget.h
+    wget.h \
+    inetdataupdate.h
 
 TRANSLATIONS = lang/ru_RU.ts
 

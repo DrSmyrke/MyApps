@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QEvent>
 #include <QPushButton>
+#include <QLabel>
 #include <QMenu>
 #include "global.h"
 #include "windows/serialmonitor.h"
@@ -13,6 +14,7 @@
 #include "windows/bookmarkswindow.h"
 #include "nativeeventfilter.h"
 #include "process.h"
+#include "inetdataupdate.h"
 
 class MainWindow : public QMainWindow
 {
@@ -34,6 +36,7 @@ private:
 	QMenu* m_pSSHMenu;
 	QMenu* m_pBookmarksMenu;
 	QAction* m_pProcCount;
+	InetDataUpdate* m_pInetDataUpdate;
 
 	bool m_leave = false;
 	QSize m_windowSize;

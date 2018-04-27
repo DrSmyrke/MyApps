@@ -1,14 +1,14 @@
 #include "execwindow.h"
 #include <QLayout>
 #include <QCompleter>
-#include <unistd.h>
 #include <QDateTime>
+#include <unistd.h>
+
+//TODO: remove qdebug
 #include <QDebug>
-#include <QXmlStreamReader>
 
 ExecWindow::ExecWindow(QWidget *parent) : QMainWindow(parent)
 {
-	m_pWget = new Wget(this);
 	m_pStringListModel = new QStringListModel(this);
 	m_pCompleter = new QCompleter(this);
 		m_pCompleter->setCompletionMode(QCompleter::PopupCompletion);
@@ -31,22 +31,12 @@ ExecWindow::ExecWindow(QWidget *parent) : QMainWindow(parent)
 
 	connect(m_pExecLine,&QLineEdit::textChanged,this,&ExecWindow::slot_textChanged);
 	connect(m_pExecLine,&QLineEdit::returnPressed,this,&ExecWindow::slot_returnPressed);
-	connect(m_pWget,&Wget::signal_complete,this,[this](){
-		switch (m_wgetOperation) {
-			case wget_operation_getKotirovki: parsingValuta( m_pWget->getBody() ); break;
-		}
-		m_wgetOperation = 0;
-	});
 }
 
 void ExecWindow::open()
 {
 	if( this->isHidden() ){
 		this->show();
-
-		QDateTime dt = QDateTime::currentDateTime();
-		auto date = dt.toString("dd/MM/yyyy");
-		if( date != app::conf.valuta.dateUpdate ) updateValuta();
 	}else{
 		this->hide();
 		return;
@@ -132,30 +122,21 @@ void ExecWindow::slot_textChanged(const QString &text)
 	auto tmp = text.split(" ");
 	if( tmp.size() >= 2 ){
 		if( tmp[1].toLower() == "usd" or tmp[1].toLower() == "$" ){
-			if( !app::conf.valuta.usd or !app::conf.valuta.eur ){
-				updateValuta();
-				return;
-			}
+			if( !app::conf.valuta.usd or !app::conf.valuta.eur ) return;
 			list.push_back( text + " = " + QString::number(tmp[0].toFloat() * app::conf.valuta.usd) + " ₽" );
 			list.push_back( text + " = " + QString::number(tmp[0].toFloat() * app::conf.valuta.usd / app::conf.valuta.eur) + " €" );
 			m_pStringListModel->setStringList( list );
 			return;
 		}
 		if( tmp[1].toLower() == "eur" or tmp[1].toLower() == "€" ){
-			if( !app::conf.valuta.usd or !app::conf.valuta.eur ){
-				updateValuta();
-				return;
-			}
+			if( !app::conf.valuta.usd or !app::conf.valuta.eur ) return;
 			list.push_back( text + " = " + QString::number(tmp[0].toFloat() * app::conf.valuta.eur) + " ₽" );
 			list.push_back( text + " = " + QString::number(tmp[0].toFloat() * app::conf.valuta.eur / app::conf.valuta.usd) + " $" );
 			m_pStringListModel->setStringList( list );
 			return;
 		}
 		if( tmp[1].toLower() == "rub" or tmp[1].toLower() == "₽" ){
-			if( !app::conf.valuta.usd or !app::conf.valuta.eur ){
-				updateValuta();
-				return;
-			}
+			if( !app::conf.valuta.usd or !app::conf.valuta.eur ) return;
 			list.push_back( text + " = " + QString::number(tmp[0].toFloat() / app::conf.valuta.eur) + " €" );
 			list.push_back( text + " = " + QString::number(tmp[0].toFloat() / app::conf.valuta.usd) + " $" );
 			m_pStringListModel->setStringList( list );
@@ -244,57 +225,4 @@ void ExecWindow::resizeMonitor()
 	auto tmp = app::conf.serialMonitor.split("x");
 	if( tmp.size() != 2 ) return;
 	this->setFixedSize( tmp[0].toUInt(), tmp[1].toUInt() );
-}
-
-void ExecWindow::updateValuta()
-{
-	QDateTime dt = QDateTime::currentDateTime();
-	auto date = dt.toString("dd/MM/yyyy");
-	app::conf.valuta.dateUpdate = date;
-	if( m_pWget->isRunning() ) return;
-	m_pWget->get( "http://www.cbr.ru/scripts/XML_daily.asp?date_req=" + date );
-	m_wgetOperation = wget_operation_getKotirovki;
-}
-
-void ExecWindow::parsingValuta(const QString &data)
-{
-	QXmlStreamReader xml(data);
-	while (!xml.atEnd() && !xml.hasError()){
-		QXmlStreamReader::TokenType token = xml.readNext();
-		if (token == QXmlStreamReader::StartDocument) continue;
-		if (token == QXmlStreamReader::StartElement){
-			if (xml.name() == "Valute"){
-				QString val;
-				int nominal = 0;
-				float value;
-				while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name() == "Valute")){
-					if (xml.tokenType() == QXmlStreamReader::StartElement){
-						if (xml.name() == "CharCode"){
-							if (xml.tokenType() == QXmlStreamReader::StartElement){
-								xml.readNext();
-								val = xml.text().toString();
-							}
-						}
-						if (xml.name() == "Nominal"){
-							if (xml.tokenType() == QXmlStreamReader::StartElement){
-								xml.readNext();
-								nominal = xml.text().toUInt();
-							}
-						}
-						if (xml.name() == "Value"){
-							if (xml.tokenType() == QXmlStreamReader::StartElement){
-								xml.readNext();
-								value = xml.text().toString().replace(",",".").toFloat();
-							}
-						}
-					}
-					xml.readNext();
-				}
-				if(val == "USD") app::conf.valuta.usd = (float)nominal*value;
-				if(val == "EUR") app::conf.valuta.eur = (float)nominal*value;
-			}
-		}
-	}
-	m_pExecLine->setText( m_pExecLine->text() );
-	slot_textChanged( m_pExecLine->text() );
 }

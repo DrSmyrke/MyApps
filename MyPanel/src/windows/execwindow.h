@@ -6,11 +6,6 @@
 #include <QCompleter>
 #include <QStringListModel>
 #include "global.h"
-#include "wget.h"
-
-enum{
-	wget_operation_getKotirovki = 1,
-};
 
 class ExecWindow : public QMainWindow
 {
@@ -28,15 +23,11 @@ private:
 	QCompleter* m_pCompleter;
 	QLineEdit* m_pExecLine;
 	QStringListModel* m_pStringListModel;
-	Wget* m_pWget;
 	bool m_flag = false;
 	float m_usd = 0;
 	float m_eur = 0;
-	uint8_t m_wgetOperation;
 
 	void resizeMonitor();
-	void updateValuta();
-	void parsingValuta(const QString &data);
 };
 
 #endif // EXECWINDOW_H
