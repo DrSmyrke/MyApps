@@ -6,15 +6,13 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QMenu>
+#include <QThread>
 #include "global.h"
-#include "windows/serialmonitor.h"
 #include "windows/settings.h"
-#include "windows/hwmonitorwindow.h"
 #include "windows/execwindow.h"
 #include "windows/bookmarkswindow.h"
 #include "nativeeventfilter.h"
-#include "process.h"
-#include "inetdataupdate.h"
+#include "dataupdate.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,33 +23,28 @@ public:
 private:
 	BookmarksWindow* m_pBookmarksWindow;
 	ExecWindow* m_pExecWindow;
-	HWMonitorWindow* m_pHWMonitorWindow;
-	SerialMonitor* m_pSerialMonitor;
 	Settings* m_pSettings;
-	QPushButton* m_pComTermB;
 	QPushButton* m_pMenuB;
-	QPushButton* m_pMonitorB;
 	NativeEventFilter* m_pNativeEventFilter;
 	QMenu* m_pMainMenu;
 	QMenu* m_pSSHMenu;
 	QMenu* m_pBookmarksMenu;
-	QAction* m_pProcCount;
-	InetDataUpdate* m_pInetDataUpdate;
+	QMenu* m_pHomeDirMenu;
+	DataUpdate* m_pDataUpdate;
+	QThread* m_pThread;
 
 	bool m_leave = false;
 	QSize m_windowSize;
-	std::vector<Process*> m_process;
 
 	void getMainSize();
 	void panelHide();
-	void startDetached(const QString &cmd, const QStringList &args = QStringList());
-	void changeProcCounter() { m_pProcCount->setText( tr("Running threads: ") + QString::number( m_process.size() ) ); }
 	void reloadBookmarks();
+	void drawDirMenu(QMenu* menu, const QString &path);
 	void mount(const QString &type, const QString &remotePath, const QString &path);
 
 	std::map<QString, QString> getMountList();
 signals:
-	void signal_stopAll();
+	void signal_stopThreads();
 private slots:
 	void slot_GlobalHotkey(const uint8_t mode, const uint16_t key);
 	void slot_syncSave();

@@ -24,7 +24,7 @@ void Wget::get(QString url)
 
 	if( url.indexOf("http://",Qt::CaseInsensitive) == 0 ) url.remove(0,7);
 
-	for(uint32_t i = 0; i < url.size(); i++){
+	for(uint32_t i = 0; i < (unsigned)url.size(); i++){
 		if(addr.isEmpty()){
 			if( url[i] == ':' ){
 				port = 0;
@@ -56,7 +56,7 @@ void Wget::get(QString url)
 	if( m_pSocket->isOpen() ){
 		QByteArray ba;
 		ba.append("GET " + path + " HTTP/1.1\r\nHost: " + addr + ":" + QString::number(port) + "\r\nConnection: close\r\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0\r\n\r\n");
-		int r = m_pSocket->write(ba);
+		m_pSocket->write(ba);
 		m_pSocket->waitForBytesWritten(100);
 		m_running = true;
 	}else{

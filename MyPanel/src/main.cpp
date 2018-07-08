@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	QString filename = QLocale::system().name();
+	app::localeName = QLocale::system().name();
 	QTranslator translator(&a);
-	if(translator.load(filename,"://lang/")) a.installTranslator(&translator);
+	if(translator.load(app::localeName,"://lang/")) a.installTranslator(&translator);
 
 	app::loadSettings();
 

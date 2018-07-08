@@ -11,8 +11,6 @@ enum{
 	key_type_R = 0x0052,
 	key_type_E = 0x0045,
 	key_type_Tilda = 0x007e,
-	swap_mode_static = 3,
-	swap_mode_dynamic = 4,
 	ui_skrepka,
 	proc_status_normal,
 	proc_status_crash,
@@ -63,12 +61,19 @@ struct Valuta{
 	QString dateUpdate;
 };
 
+struct ApplicationData{
+	bool terminal = false;
+	QString name;
+	QString comment;
+	QString exec;
+	QString icon;
+};
+
 struct Config{
 	SerialPortSettings serialPort;
 	QString serialMonitor;
 	std::vector<QString> autostartList;
 	SyncSettings sync;
-	uint8_t swapMode = swap_mode_dynamic;
 	QString sshConfDir = QDir::homePath()+"/.ssh";
 	QString sshConfig = QDir::homePath()+"/.ssh/config";
 	std::vector<Bookmark> bookmarks;
@@ -78,6 +83,7 @@ struct Config{
 namespace app {
 	extern Config conf;
 	extern QSize screen;
+	extern QString localeName;
 
 	void loadSettings();
 	void saveSettings();

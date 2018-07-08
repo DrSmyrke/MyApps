@@ -4,6 +4,7 @@
 namespace app {
 	Config conf;
 	QSize screen;
+	QString localeName;
 
 	void loadSettings()
 	{
@@ -16,7 +17,6 @@ namespace app {
 		app::conf.serialPort.folowControl = settings.value("SERIAL/folowControl",app::conf.serialPort.folowControl).toInt();
 
 		app::conf.serialMonitor = settings.value("MAIN/serialMonitor",app::conf.serialMonitor).toString();
-		app::conf.swapMode = settings.value("MAIN/swapMode",app::conf.swapMode).toInt();
 
 		app::conf.sync.personalDir = settings.value("SYNC/personalDir",app::conf.sync.personalDir).toString();
 		app::conf.sync.user = settings.value("SYNC/user",app::conf.sync.user).toString();
@@ -66,7 +66,6 @@ namespace app {
 		settings.setValue("SERIAL/folowControl",app::conf.serialPort.folowControl);
 
 		settings.setValue("MAIN/serialMonitor",app::conf.serialMonitor);
-		settings.setValue("MAIN/swapMode",app::conf.swapMode);
 
 		settings.setValue("SYNC/personalDir",app::conf.sync.personalDir);
 		settings.setValue("SYNC/user",app::conf.sync.user);

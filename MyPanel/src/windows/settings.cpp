@@ -1,4 +1,3 @@
-
 #include "settings.h"
 #include <QLayout>
 #include <QLabel>
@@ -15,9 +14,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 		m_pRemotePort->setRange(1,65535);
 	m_pEditor = new QTextEdit(this);
 	m_pSyncSaveDirs = new QTextEdit(this);
-	QGroupBox* swapGroupBox = new QGroupBox(tr("Swap mode"),this);
-	m_pStaticSwapB = new QRadioButton(tr("Static"),this);
-	m_pDynamicSwapB = new QRadioButton(tr("Dynamic (use swapspace)"),this);
 
 	QWidget* centrWidget = new QWidget(this);
 		QVBoxLayout* vBox = new QVBoxLayout();
@@ -43,11 +39,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 			autostartBox->addWidget(new QLabel( tr("<b>Autostart:</b>") ));
 			autostartBox->addWidget(m_pEditor);
 		vBox->addLayout(autostartBox);
-			QHBoxLayout* swapBox = new QHBoxLayout();
-				swapBox->addWidget(m_pStaticSwapB);
-				swapBox->addWidget(m_pDynamicSwapB);
-			swapGroupBox->setLayout(swapBox);
-		vBox->addWidget(swapGroupBox);
 
 
 
@@ -76,8 +67,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 			app::conf.sync.workDir = m_pRDir->text();
 			app::conf.sync.personalDir = m_pPersonalDir->text();
 
-			if( m_pStaticSwapB->isChecked() ) app::conf.swapMode = swap_mode_static;
-			if( m_pDynamicSwapB->isChecked() ) app::conf.swapMode = swap_mode_dynamic;
 
 			app::saveSettings();
 		}
@@ -88,8 +77,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 
 void Settings::open()
 {
-	uint8_t i = 0;
-
 	this->show();
 	m_pEditor->clear();
 	for( auto elem:app::conf.autostartList ) m_pEditor->append( elem );
@@ -102,9 +89,4 @@ void Settings::open()
 	m_pRDir->setText( app::conf.sync.workDir );
 	m_pRemotePort->setValue( app::conf.sync.port );
 	m_pPersonalDir->setText( app::conf.sync.personalDir );
-
-	switch (app::conf.swapMode) {
-		case swap_mode_static: m_pStaticSwapB->setChecked(true); break;
-		case swap_mode_dynamic: m_pDynamicSwapB->setChecked(true); break;
-	}
 }

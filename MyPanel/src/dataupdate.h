@@ -1,5 +1,5 @@
-#ifndef INETDATAUPDATE_H
-#define INETDATAUPDATE_H
+#ifndef DATAUPDATE_H
+#define DATAUPDATE_H
 
 #include <QObject>
 #include <QTimer>
@@ -10,20 +10,23 @@ enum{
 	wget_operation_getKotirovki = 1,
 };
 
-class InetDataUpdate : public QObject
+class DataUpdate : public QObject
 {
 	Q_OBJECT
 public:
-	explicit InetDataUpdate(QObject *parent = 0);
-	void updateAll();
+	explicit DataUpdate(QObject *parent = 0);
+signals:
+	void signal_finished();
+	void signal_applicationUpdate();
+public slots:
+	void slot_stop();
 	void updateValuta();
 private:
 	Wget* m_pWget;
 	QTimer* m_pTimer;
 	uint8_t m_wgetOperation;
-	bool m_updateAllF = false;
 
 	void parsingValuta(const QString &data);
 };
 
-#endif // INETDATAUPDATE_H
+#endif // DATAUPDATE_H
