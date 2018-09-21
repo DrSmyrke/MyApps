@@ -8,7 +8,8 @@ The application for monitoring computer resources
 
 * Bug fixes
 * make on QT libs
-![Alt MyStats 1.0](MyStats/C++_QT/v1_0.png)
+
+![MyStats 1.0](C++_QT/v1_0.png)
 
 **=== MyStats v0.3 =========**
 
@@ -17,4 +18,4 @@ The application for monitoring computer resources
 * The display of logging
 * Logs are written every minute when updating window is set less than 1000 milliseconds
 
-[![Alt MyStats 2.0](https://img.youtube.com/vi/HmseIjREyPI/0.jpg)](http://www.youtube.com/watch?v=HmseIjREyPI)
+[![MyStats 2.0](https://img.youtube.com/vi/HmseIjREyPI/0.jpg)](http://www.youtube.com/watch?v=HmseIjREyPI)
