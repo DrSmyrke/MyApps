@@ -1,11 +1,14 @@
 # MyStats
 The application for monitoring computer resources
 
-###The configuration file is created here ~/.MyStats/config
-###Catalog with logs is here ~/.MyStats/logs
-
+###The configuration file is created here ~/.config/MySoft/MyStats.conf
      Click the left mouse button on the window (set / remove) the window lock
-     Clicking the middle mouse button on the window (set / remove) the function of logging
+
+**=== MyStats v1.0 =========**
+
+* Bug fixes
+* make on QT libs
+![Alt MyStats 1.0](MyStats/C++_QT/v1_0.png)
 
 **=== MyStats v0.3 =========**
 
