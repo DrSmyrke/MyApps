@@ -186,8 +186,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 void MainWindow::enterEvent(QEvent *event)
 {
-	if( app::conf.windowState == window_state_hide ) setWindowState( window_state_show );
-	if( app::conf.windowState == window_state_show ) m_hideFlag = true;
+	if( app::conf.windowState == window_state_hide ) { setWindowState( window_state_show ); m_hideFlag = true; }
 
 	QMainWindow::enterEvent(event);
 }

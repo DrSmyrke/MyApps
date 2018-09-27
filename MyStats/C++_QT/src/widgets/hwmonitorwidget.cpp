@@ -198,11 +198,7 @@ bool HWMonitorWidget::mouseClickToObject()
 	}
 	if( m_swapParam.clear ){
 		if( chkHoverSwap( m_swapParam.y ) ){
-			//switch (app::conf.swapMode) {
-				//TODO: доделать
-				//case swap_mode_static: QProcess::startDetached("gksu \"swapoff -a && swapon -a\" || ksudo \"swapoff -a && swapon -a\" || xterm -e \"sudo swapoff -a && sudo swapon -a\""); break;
-				//case swap_mode_dynamic:QProcess::startDetached("gksu \"swapspace -e\""); break;
-			//}
+			QProcess::startDetached("gksu \"swapspace -e\" || gksu \"swapoff -a && swapon -a\" || ksudo \"swapoff -a && swapon -a\" || xterm -e \"sudo swapoff -a && sudo swapon -a\"");
 			m_swapParam.hover = false;
 			find = true;
 		}
@@ -284,7 +280,7 @@ bool HWMonitorWidget::chkHoverIface(const uint16_t y)
 
 bool HWMonitorWidget::chkHoverDisk(const uint16_t y)
 {
-	return (m_mouse.y() >= y && m_mouse.y() < y + 28) ? true : false;
+	return (m_mouse.y() >= y && m_mouse.y() < y + 28 ) ? true : false;
 }
 
 bool HWMonitorWidget::chkHoverSwap(const uint16_t y)

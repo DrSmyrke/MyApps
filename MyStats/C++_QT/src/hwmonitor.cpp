@@ -2,6 +2,7 @@
 #include <QDateTime>
 #include <QProcess>
 #include <QDir>
+#include <sys/statfs.h>    /* or <sys/vfs.h> */
 #include "Net/netif.h"
 //TODO: remove qDebug
 #include <QDebug>
@@ -207,26 +208,33 @@ void HWMonitor::getIfaces()
 void HWMonitor::getDevs()
 {
 	m_data.disks.clear();
-	QProcess cmd;
-	cmd.start("df -B 1");
-	cmd.waitForFinished(1500);
-	if( cmd.bytesAvailable() > 0 ){
-		auto buff = cmd.readAll();
-		for(auto str:buff.split('\n')){
-			while( str.contains( QByteArray("  ") ) ) str.replace("  ", QByteArray(" "));
-			auto data = str.split(' ');
-			if( data.size() != 6 ) continue;
-			if( !data[0].contains('/') ) continue;
+	FILE* f = fopen("/proc/self/mountinfo","r");
+	QByteArray buff;
+	char ch;
+	uint8_t n;
+	while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
+	fclose(f);
 
-			Disk disk;
-			disk.name = data[0];
-			disk.size = data[1].toLong();
-			disk.used = data[2].toLong();
-			disk.avail = data[3].toLong();
-			disk.mount = data[5];
-			disk.usedPrz = (float)disk.used / ( (float)disk.size / 100.0 );
+	for(auto str:buff.split('\n')){
+		auto tmp = str.split(' ');
+		if( tmp.size() != 10 ) continue;
+		struct statfs fs;
+		if( statfs( tmp[4].data(), &fs ) != 0 ) continue;
 
-			m_data.disks.push_back(disk);
-		}
+		Disk disk;
+		disk.fstype = tmp[7];
+		if( disk.fstype == "tmpfs" || disk.fstype == "debugfs" || disk.fstype == "fusectl"
+				|| disk.fstype == "fusectl" || disk.fstype == "proc"
+				|| disk.fstype == "sysfs" || disk.fstype == "devtmpfs"
+				|| disk.fstype == "pstore" || disk.fstype == "binfmt_misc"
+				|| disk.fstype == "fuse.gvfsd-fuse" || disk.fstype == "securityfs"
+				|| disk.fstype == "cgroup" || disk.fstype == "devpts" ) continue;
+		disk.name = tmp[8];
+		disk.size = fs.f_bsize * fs.f_blocks;
+		disk.avail = fs.f_bsize * fs.f_bavail;
+		disk.mount = tmp[4];
+		disk.used = disk.size - disk.avail;
+		disk.usedPrz = (float)disk.used / ( (float)disk.size / 100.0 );
+		m_data.disks.push_back(disk);
 	}
 }

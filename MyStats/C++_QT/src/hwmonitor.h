@@ -17,7 +17,8 @@ struct Iface{
 struct Disk{
 	QString name;
 	QString mount;
-	long size = 0;
+	QString fstype;
+	long size = -1;
 	long used = 0;
 	long avail = 0;
 	float usedPrz = 0;
