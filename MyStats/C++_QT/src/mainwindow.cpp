@@ -1,6 +1,10 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QMessageBox>
+#include <QProcess>
+//TODO: remove qDebug
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -40,6 +44,28 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(QApplication::desktop(),&QDesktopWidget::screenCountChanged,this,[this]( const int num ){
 		setWindowState( app::conf.windowState );
 		Q_UNUSED(num);
+	});
+	connect(m_pHWMonitorWidget,&HWMonitorWidget::signal_diskClicked,this,[this]( const QString &path, const QString &name ){
+		QMessageBox msgBox(this);
+		msgBox.setText("You are selected device [" + name + "]");
+		msgBox.setInformativeText("Device mount to: " + path);
+		msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Discard | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		msgBox.setButtonText(QMessageBox::Discard,"Eject");
+		msgBox.setWindowFlags( Qt::ToolTip );
+		int ret = msgBox.exec();
+		QString dev;
+		switch (ret) {
+			case QMessageBox::Open: QProcess::startDetached("xdg-open " + path); break;
+			case QMessageBox::Discard:
+				dev = name.left( name.length() - 1 );
+				QProcess::startDetached("udisks --unmount " + name);
+				QProcess::startDetached("udisksctl unmount -b " + name);
+				QProcess::startDetached("udisks --detach " + dev);
+				QProcess::startDetached("udisksctl power-off -b " + dev);
+			break;
+			default: break;
+		}
 	});
 
 	m_pTimer->start();

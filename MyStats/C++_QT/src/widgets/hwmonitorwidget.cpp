@@ -138,6 +138,7 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 		}
 
 		if( name != "/" ){
+			m_disks[disk.mount].name = disk.name;
 			// Записываем координату У интерфейса
 			m_disks[disk.mount].y = y;
 			// Если мышка наведена рисуем бокс
@@ -191,7 +192,7 @@ bool HWMonitorWidget::mouseClickToObject()
 	}
 	for(auto &elem:m_disks){
 		if( chkHoverDisk(elem.second.y + 3) ){
-			QProcess::startDetached("xdg-open " + elem.first);
+			emit signal_diskClicked( elem.first, elem.second.name );
 			find = true;
 			break;
 		}

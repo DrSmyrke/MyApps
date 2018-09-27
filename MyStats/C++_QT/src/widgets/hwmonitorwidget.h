@@ -15,6 +15,7 @@ struct IfaceParam{
 struct DiskParam{
 	uint16_t y;
 	bool hover = false;
+	QString name;
 };
 struct SwapParam{
 	uint16_t y;
@@ -34,6 +35,7 @@ public slots:
 	void slot_update();
 signals:
 	void signal_heightChangeRequest(const uint16_t newValue);
+	void signal_diskClicked( const QString &path, const QString &name );
 protected:
 	void paintEvent(QPaintEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
