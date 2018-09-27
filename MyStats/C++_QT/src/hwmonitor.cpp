@@ -1,6 +1,5 @@
 #include "hwmonitor.h"
 #include <QDateTime>
-#include <QProcess>
 #include <QDir>
 #include <sys/statfs.h>    /* or <sys/vfs.h> */
 #include "Net/netif.h"
@@ -98,6 +97,7 @@ void HWMonitor::getCpu()
 
 void HWMonitor::getMem()
 {
+	/*
 	QProcess cmd;
 	cmd.start("free -b");
 	cmd.waitForFinished(250);
@@ -123,13 +123,40 @@ void HWMonitor::getMem()
 			m_data.swap = tmpSwap[2].toFloat() / ( tmpSwap[1].toFloat() / 100.0 );
 		}
 	}
+	*/
+	FILE* fmem = fopen("/proc/meminfo","r");
+	QByteArray buffmem;
+	char ch;
+	uint8_t n;
+	while( (n = fread(&ch,1,1,fmem) ) > 0 ) buffmem.append(ch);
+	fclose(fmem);
+
+	long memTotal = 0;
+	long memFree = 0;
+	long swapTotal = 0;
+	long swapFree = 0;
+	for(auto str:buffmem.split('\n')){
+		while( str.contains( QByteArray("  ") ) ) str.replace("  ", QByteArray(" "));
+		auto data = str.split(' ');
+		if( data.size() != 3 ) continue;
+		if( data[0].contains( QByteArray("MemTotal")  ) ) memTotal = data[1].toLong() * 1024;
+		if( data[0].contains( QByteArray("MemFree")  ) ) memFree = data[1].toLong() * 1024;
+		if( data[0].contains( QByteArray("SwapTotal")  ) ) swapTotal = data[1].toLong() * 1024;
+		if( data[0].contains( QByteArray("SwapFree")  ) ) swapFree = data[1].toLong() * 1024;
+	}
+	m_data.memTotal = mf::getSize( memTotal );
+	m_data.memUsed = mf::getSize( memTotal - memFree );
+	m_data.mem = (float)(memTotal - memFree) / ( (float)memTotal / 100.0 );
+
+	m_data.swapTotal = mf::getSize( swapTotal );
+	m_data.swapUsed = mf::getSize( swapTotal - swapFree );
+	m_data.swap = (float)(swapTotal - swapFree) / ( (float)swapTotal / 100.0 );
+
 	// SWAPS
 	//if( app::conf.swapMode == swap_mode_static ){
 		m_data.swaps.clear();
 		FILE* f = fopen("/proc/swaps","r");
 		QByteArray buff;
-		char ch;
-		uint8_t n;
 		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
 		fclose(f);
 
