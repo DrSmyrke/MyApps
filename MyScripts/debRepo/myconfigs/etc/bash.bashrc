@@ -22,20 +22,23 @@ PS1='${debian_chroot:+($debian_chroot)}\u@\h \w \$ '
 # If this is an xterm set the title to user@host:dir
 #case "$TERM" in
 #xterm*|rxvt*)
-#    PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD}\007"'
+#    PS1="╭─ \[\e[1;35m\][\A] \[\e[0;33m\]\u@\H:\[\e[1;37m\][\w]\n\[\e[0m\]╰→ \[\e[1;32m\]>: \[\e[0m\]"
+#    PS2="\[\e[1;32m\]>: \[\e[0m\]"
+#    PS3="\[\e[1;33m\]>: \[\e[0m\]"
+#    PS4="\[\e[1;31m\]>: \[\e[0m\]"
 #    ;;
 #*)
 #    ;;
 #esac
 
 # enable bash completion in interactive shells
-#if ! shopt -oq posix; then
-#  if [ -f /usr/share/bash-completion/bash_completion ]; then
-#    . /usr/share/bash-completion/bash_completion
-#  elif [ -f /etc/bash_completion ]; then
-#    . /etc/bash_completion
-#  fi
-#fi
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
 
 # if the command-not-found package is installed, use it
 if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-not-found ]; then
@@ -53,5 +56,27 @@ if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-no
 		fi
 	}
 fi
+####### MY CODE #################
+if [ -f /etc/DrSmyrke/girl ]; then
+	cat /etc/DrSmyrke/girl
+fi
 
-cat /etc/DrSmyrke/girl
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+if [ "`id -u`" -eq 0 ]; then
+    PS1="╭─ \[\e[1;35m\][\A] \[\e[1;31m\]\u\[\e[0;33m\]@\H:\[\e[1;37m\][\w]\n\[\e[0m\]╰→ \[\e[1;32m\]>: \[\e[0m\]"
+	PS2="\[\e[1;32m\]>: \[\e[0m\]"
+	PS3="\[\e[1;33m\]>: \[\e[0m\]"
+	PS4="\[\e[1;31m\]>: \[\e[0m\]"
+else
+    PS1="╭─ \[\e[1;35m\][\A] \[\e[0;32m\]\u\[\e[0;33m\]@\H:\[\e[1;37m\][\w]\n\[\e[0m\]╰→ \[\e[1;32m\]>: \[\e[0m\]"
+  	PS2="\[\e[1;32m\]>: \[\e[0m\]"
+   	PS3="\[\e[1;33m\]>: \[\e[0m\]"
+   	PS4="\[\e[1;31m\]>: \[\e[0m\]"
+fi

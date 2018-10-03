@@ -24,8 +24,8 @@ bzip2 -9c <$DIR/main/binary-i386/Packages >$DIR/main/binary-i386/Packages.bz2
 
 apt-ftparchive release $DIR >>$DIR/Release
 
-gpg --armor -o $DIR/Release.gpg -sb $DIR/Release
-gpg --clearsign --digest-algo SHA512 -o $DIR/InRelease $DIR/Release
+gpg --armor --no-use-agent -o $DIR/Release.gpg -sb $DIR/Release
+gpg --clearsign --no-use-agent --digest-algo SHA512 -o $DIR/InRelease $DIR/Release
 
 
 

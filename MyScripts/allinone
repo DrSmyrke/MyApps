@@ -197,9 +197,10 @@ case $1 in
 	;;
 	"s26")	calendar	;;
 	"s27")
-		sudo apt-get install qtcreator qt5-doc qttranslations5-l10n qttools5-dev-tools g++ gcc cmake mc qtbase5-dev git meld ghex dpkg debconf debhelper unetbootin extlinux
+		sudo apt-get install qtcreator qt5-doc qttranslations5-l10n qttools5-dev-tools g++ gcc cmake mc qtbase5-dev git meld ghex dpkg debconf debhelper unetbootin extlinux vim
 		sudo apt-get install gcc-avr avrdude avr-libc
 		sudo apt-get install gpxviewer openstreetmap-client
+		sudo apt-get install fakeroot dpkg-dev
 	;;
 	"s28")	ssh-keygen -t rsa -b 4096 -f ./ssh-new_key-rsa	;;
 	"s29")	dd if=/dev/zero bs=1M count=10240 | gzip > 10G.gzip	;;
