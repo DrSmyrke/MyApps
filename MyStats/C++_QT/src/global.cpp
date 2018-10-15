@@ -12,7 +12,6 @@ namespace app {
 		app::conf.showSize = settings.value("UI/showSize", app::conf.showSize).toUInt();
 		app::conf.winPos.setX( settings.value("UI/winPosX", app::conf.winPos.x()).toInt() );
 		app::conf.winPos.setY( settings.value("UI/winPosY", app::conf.winPos.y()).toInt() );
-		app::conf.windowState = settings.value("UI/windowState", app::conf.windowState).toUInt();
 		app::conf.fixed = settings.value("UI/fixed", app::conf.fixed).toBool();
 
 		if( settings.childGroups().size() == 0 ) app::saveSettings();
@@ -27,7 +26,6 @@ namespace app {
 		settings.setValue("UI/showSize", app::conf.showSize);
 		settings.setValue("UI/winPosX", app::conf.winPos.x());
 		settings.setValue("UI/winPosY", app::conf.winPos.y());
-		settings.setValue("UI/windowState", app::conf.windowState);
 		settings.setValue("UI/fixed", app::conf.fixed);
 	}
 }

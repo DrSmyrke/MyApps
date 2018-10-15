@@ -24,7 +24,7 @@ private:
 	QRect m_screen;
 	bool m_hideFlag = false;
 
-	void setWindowState( const uint8_t state );
+	void setWindowAction();
 protected:
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseReleaseEvent(QMouseEvent *event) override;

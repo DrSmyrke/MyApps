@@ -15,16 +15,13 @@ MainWindow::MainWindow(QWidget *parent)
 		m_pHWMonitorWidget->setMouseTracking(true);
 
 	setCentralWidget(m_pHWMonitorWidget);
-	setWindowFlags(Qt::Popup | Qt::ToolTip);
-	setBaseSize( app::conf.windowFixedWidth, app::conf.windowRealHeight );
-	setFixedWidth( app::conf.windowFixedWidth );
+	setWindowFlags(Qt::WindowStaysOnBottomHint | Qt::CustomizeWindowHint);
+	setBaseSize( 270, 240 );
+	setFixedWidth( 270 );
 	setAttribute(Qt::WA_TranslucentBackground);
 	move( app::conf.winPos );
 
-	connect(m_pHWMonitorWidget,&HWMonitorWidget::signal_heightChangeRequest,this,[this]( const uint16_t newHeight ){
-		app::conf.windowRealHeight = newHeight;
-		if( app::conf.windowState == window_state_show ) this->setFixedHeight( app::conf.windowRealHeight );
-	});
+	connect(m_pHWMonitorWidget,&HWMonitorWidget::signal_heightChangeRequest,this,&MainWindow::setFixedHeight);
 	connect(m_pTimer,&QTimer::timeout,this,[this](){
 		if( app::conf.saveSettings ){
 			if( app::conf.saveSettingsCounter++ >= 28 ){	// 7000 ms / 250 ms timer timeout = 28
@@ -33,16 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
 			}
 		}
 		m_pHWMonitorWidget->slot_update();
-		if( !app::conf.fixed ){
-			if( app::conf.hideWindowCounter == 0 ){
-				setWindowState( window_state_hide );
-				app::conf.hideWindowCounter = -1;
-			}
-			if( app::conf.hideWindowCounter > 0 ) app::conf.hideWindowCounter--;
-		}
 	});
 	connect(QApplication::desktop(),&QDesktopWidget::screenCountChanged,this,[this]( const int num ){
-		setWindowState( app::conf.windowState );
+		//FIXME: 23
+		//setWindowState( app::conf.windowState );
 		Q_UNUSED(num);
 	});
 	connect(m_pHWMonitorWidget,&HWMonitorWidget::signal_diskClicked,this,[this]( const QString &path, const QString &name ){
@@ -69,8 +60,7 @@ MainWindow::MainWindow(QWidget *parent)
 	});
 
 	m_pTimer->start();
-
-	setWindowState( app::conf.windowState );
+	m_pHWMonitorWidget->slot_show();
 }
 
 MainWindow::~MainWindow()
@@ -78,9 +68,8 @@ MainWindow::~MainWindow()
 
 }
 
-void MainWindow::setWindowState(const uint8_t state)
+void MainWindow::setWindowAction()
 {
-	app::conf.windowState = state;
 	app::conf.saveSettings = true;
 
 	int primaryScreenNum = QApplication::desktop()->primaryScreen();
@@ -98,39 +87,7 @@ void MainWindow::setWindowState(const uint8_t state)
 			|| this->pos().x() < 0 || this->pos().y() < 0 ){
 		m_screen = primaryScreen;
 		this->move( primaryScreen.x(), primaryScreen.y() );
-		app::conf.windowState = window_state_show;
 	}
-	//
-
-
-
-	int16_t screenTX = this->pos().x() - m_screen.x();
-	int16_t screenTY = this->pos().y() - m_screen.y();
-	int16_t screenBX = screenTX + this->width();
-	int16_t screenBY = screenTY + this->height();
-
-	uint16_t newWidth = app::conf.windowFixedWidth;
-	uint16_t newHeight = this->size().height();
-
-	switch ( app::conf.windowState ) {
-		case window_state_hide:
-			if( screenTX == 0 || screenBX == m_screen.width() ) newWidth = app::conf.showSize;
-			if( screenTY == 0 || screenBY == m_screen.height() ) newHeight = app::conf.showSize;
-			this->setFixedSize( newWidth, newHeight );
-			if( screenBX >= m_screen.width() ) move( this->pos().x() + app::conf.windowFixedWidth - app::conf.showSize, this->pos().y() );
-			if( screenBY >= m_screen.height() ) move( this->pos().x(), m_screen.height() - app::conf.showSize );
-			m_pHWMonitorWidget->slot_hide();
-		break;
-		case window_state_show:
-			this->setFixedSize( app::conf.windowFixedWidth, app::conf.windowRealHeight );
-			if( screenTX == m_screen.width() - app::conf.showSize ) move( this->pos().x() - app::conf.windowFixedWidth + app::conf.showSize, this->pos().y() );
-			if( screenTY == m_screen.height() - app::conf.showSize ) move( this->pos().x(), m_screen.height() - app::conf.windowRealHeight );
-			m_pHWMonitorWidget->slot_show();
-			app::conf.hideWindowCounter = -1;
-			m_hideFlag = false;
-		break;
-	}
-
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -212,14 +169,14 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 void MainWindow::enterEvent(QEvent *event)
 {
-	if( app::conf.windowState == window_state_hide ) { setWindowState( window_state_show ); m_hideFlag = true; }
+	this->setWindowOpacity( 1 );
 
 	QMainWindow::enterEvent(event);
 }
 
 void MainWindow::leaveEvent(QEvent *event)
 {
-	if( m_hideFlag ) app::conf.hideWindowCounter = 2;
+	this->setWindowOpacity( 0.1 );
 
 	QMainWindow::leaveEvent(event);
 }
