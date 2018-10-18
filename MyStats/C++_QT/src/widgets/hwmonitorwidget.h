@@ -30,8 +30,6 @@ public:
 	explicit HWMonitorWidget(QWidget *parent = 0);
 	bool mouseClickToObject();
 public slots:
-	void slot_show();
-	void slot_hide();
 	void slot_update();
 signals:
 	void signal_heightChangeRequest(const uint16_t newValue);

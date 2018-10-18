@@ -25,19 +25,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     widgets/hwmonitorwidget.cpp \
     hwmonitor.cpp \
-    global.cpp \
-    Net/ip.cpp \
-    Net/mac.cpp \
-    Net/netif.cpp
+    global.cpp
 
 HEADERS  += mainwindow.h \
     widgets/hwmonitorwidget.h \
     hwmonitor.h \
-    global.h \
-    Net/ip.h \
-    Net/mac.h \
-    Net/netif.h
+    global.h
 
 TRANSLATIONS = lang/ru_RU.ts
 
-RESOURCES +=
+RESOURCES += \
+    resources.qrc

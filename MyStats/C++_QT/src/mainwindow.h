@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QSystemTrayIcon>
 #include "widgets/hwmonitorwidget.h"
 #include "global.h"
 
@@ -22,15 +23,12 @@ private:
 	qreal m_xOffset = 0;
 	qreal m_yOffset = 0;
 	QRect m_screen;
-	bool m_hideFlag = false;
+	QSystemTrayIcon* m_pTrayIcon;
 
 	void setWindowAction();
 protected:
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseReleaseEvent(QMouseEvent *event) override;
-	void mouseMoveEvent(QMouseEvent *event) override;
-	void enterEvent(QEvent *event) override;
-	void leaveEvent(QEvent *event) override;
 };
 
 #endif // MAINWINDOW_H

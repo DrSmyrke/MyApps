@@ -7,19 +7,9 @@ HWMonitorWidget::HWMonitorWidget(QWidget *parent) : QWidget(parent)
 	m_pHWMonitor = new HWMonitor(this);
 }
 
-void HWMonitorWidget::slot_show()
-{
-	m_show = true;
-}
-
-void HWMonitorWidget::slot_hide()
-{
-	m_show = false;
-}
-
 void HWMonitorWidget::slot_update()
 {
-	if( !m_show ) return;
+	if( !app::conf.showData ) return;
 	m_pHWMonitor->slot_timer();
 	if( m_heightChangeF ) emit signal_heightChangeRequest( m_prewY );
 	this->update();
@@ -36,13 +26,13 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 	p.setBrush(QBrush(QColor(25,25,25,240)));
 	p.drawRect(0,0,this->width(),this->height());
 
-	if( app::conf.fixed ){
-		p.setPen(Qt::red);
-		font.setPixelSize(16);
-		font.setBold(true);
-		p.setFont(font);
-		p.drawText(210,5,50,15,Qt::AlignVCenter,"FIXED");
-	}
+//	if( app::conf.fixed ){
+//		p.setPen(Qt::red);
+//		font.setPixelSize(16);
+//		font.setBold(true);
+//		p.setFont(font);
+//		p.drawText(210,5,50,15,Qt::AlignVCenter,"FIXED");
+//	}
 
 
 	p.setPen(Qt::yellow);

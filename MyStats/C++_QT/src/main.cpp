@@ -3,7 +3,6 @@
 #include <QDir>
 #include <QLockFile>
 #include <QMessageBox>
-#include "global.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,16 +15,13 @@ int main(int argc, char *argv[])
 	if(!lockFile.tryLock(100)){
 		QMessageBox msgBox;
 		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.setText("Приложение MyStats уже запущено.\n"
-					   "Разрешено запускать только один экземпляр приложения.");
+		msgBox.setText("MyStats it`s work");
 		msgBox.exec();
 		return 1;
 	}
 
-	app::loadSettings();
-
 	MainWindow w;
-	w.show();
+	//w.show();
 
 	return a.exec();
 }

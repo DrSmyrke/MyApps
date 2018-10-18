@@ -9,28 +9,25 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
+	QIcon appIco = QIcon("://monitor.png");
+
 	m_pTimer = new QTimer(this);
 		m_pTimer->setInterval(250);
 	m_pHWMonitorWidget = new HWMonitorWidget(this);
 		m_pHWMonitorWidget->setMouseTracking(true);
+	m_pTrayIcon = new QSystemTrayIcon(this);
+		m_pTrayIcon->setIcon( appIco );
+		m_pTrayIcon->show();
 
 	setCentralWidget(m_pHWMonitorWidget);
-	setWindowFlags(Qt::WindowStaysOnBottomHint | Qt::CustomizeWindowHint);
+	//setWindowFlags(Qt::WindowStaysOnBottomHint | Qt::CustomizeWindowHint | Qt::Tool);
+	setWindowFlags(Qt::Popup | Qt::ToolTip);
 	setBaseSize( 270, 240 );
 	setFixedWidth( 270 );
 	setAttribute(Qt::WA_TranslucentBackground);
-	move( app::conf.winPos );
 
 	connect(m_pHWMonitorWidget,&HWMonitorWidget::signal_heightChangeRequest,this,&MainWindow::setFixedHeight);
-	connect(m_pTimer,&QTimer::timeout,this,[this](){
-		if( app::conf.saveSettings ){
-			if( app::conf.saveSettingsCounter++ >= 28 ){	// 7000 ms / 250 ms timer timeout = 28
-				app::conf.saveSettings = false;
-				app::saveSettings();
-			}
-		}
-		m_pHWMonitorWidget->slot_update();
-	});
+	connect(m_pTimer,&QTimer::timeout,m_pHWMonitorWidget,&HWMonitorWidget::slot_update);
 	connect(QApplication::desktop(),&QDesktopWidget::screenCountChanged,this,[this]( const int num ){
 		//FIXME: 23
 		//setWindowState( app::conf.windowState );
@@ -58,9 +55,18 @@ MainWindow::MainWindow(QWidget *parent)
 			default: break;
 		}
 	});
+	connect(m_pTrayIcon,&QSystemTrayIcon::activated,this,[this](){
+		if( this->isHidden() ){
+			this->show();
+			app::conf.showData = true;
+			setWindowAction();
+		}else{
+			this->hide();
+			app::conf.showData = false;
+		}
+	});
 
 	m_pTimer->start();
-	m_pHWMonitorWidget->slot_show();
 }
 
 MainWindow::~MainWindow()
@@ -70,12 +76,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::setWindowAction()
 {
-	app::conf.saveSettings = true;
-
 	int primaryScreenNum = QApplication::desktop()->primaryScreen();
 	auto primaryScreen = QApplication::desktop()->screenGeometry( primaryScreenNum );
-	m_screen = QApplication::desktop()->screenGeometry(this);
+	//m_screen = QApplication::desktop()->screenGeometry(this);
 
+	this->move( primaryScreen.width() - this->width(), 0 );
+
+	/*
 	// если окно ушло за область рабочих столов
 	int screens = QApplication::desktop()->screenCount();
 	QRect wholeDisplayGeometry;
@@ -88,6 +95,7 @@ void MainWindow::setWindowAction()
 		m_screen = primaryScreen;
 		this->move( primaryScreen.x(), primaryScreen.y() );
 	}
+	*/
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -102,20 +110,24 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
+	m_pHWMonitorWidget->mouseClickToObject();
+	/*
 	m_mouseClick = false;
 	if( !m_mouseMove ){
-		if( !m_pHWMonitorWidget->mouseClickToObject() ){
+		if( ! ){
 			app::conf.fixed = !app::conf.fixed;
 			app::conf.saveSettings = true;
 		}
 	}
 	m_mouseMove = false;
+	*/
 
 	QMainWindow::mouseReleaseEvent(event);
 }
-
+/*
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
+
 	if(m_mouseClick){
 		if( app::conf.fixed ){
 			m_mouseMove = true;
@@ -127,7 +139,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 			 QRect screenRect = QApplication::desktop()->screen(i)->geometry();
 			 wholeDisplayGeometry = wholeDisplayGeometry.united(screenRect); //union
 		}
-		m_hideFlag = false;
 		m_screen = QApplication::desktop()->screenGeometry(this);
 		auto startPos = this->pos();
 		this->move( event->screenPos().x() - m_xOffset, event->screenPos().y() - m_yOffset );
@@ -140,20 +151,16 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 		int16_t screenBX = screenTX + this->width();
 		int16_t screenBY = screenTY + this->height();
 		if( screenTX >= 0 && screenTX <= app::conf.borderSize ){
-			m_hideFlag = true;
 			this->move( m_screen.x(), this->pos().y() );
 		}
 		if( screenTY >= 0 && screenTY <= app::conf.borderSize ){
-			m_hideFlag = true;
 			this->move( this->pos().x(), m_screen.y() );
 		}
 		if( screenBX <= m_screen.width() && screenBX >= m_screen.width() - app::conf.borderSize ){
-			m_hideFlag = true;
 			uint16_t rx = m_screen.width() - screenBX;
 			this->move( this->pos().x() + rx, this->pos().y() );
 		}
 		if( screenBY <= m_screen.height() && screenBY >= m_screen.height() - app::conf.borderSize ){
-			m_hideFlag = true;
 			uint16_t ry = m_screen.height() - screenBY;
 			this->move( this->pos().x(), this->pos().y() + ry );
 		}
@@ -164,19 +171,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 
+
 	QMainWindow::mouseMoveEvent(event);
 }
-
-void MainWindow::enterEvent(QEvent *event)
-{
-	this->setWindowOpacity( 1 );
-
-	QMainWindow::enterEvent(event);
-}
-
-void MainWindow::leaveEvent(QEvent *event)
-{
-	this->setWindowOpacity( 0.1 );
-
-	QMainWindow::leaveEvent(event);
-}
+*/

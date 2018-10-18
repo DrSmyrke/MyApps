@@ -2,7 +2,9 @@
 #include <QDateTime>
 #include <QDir>
 #include <sys/statfs.h>    /* or <sys/vfs.h> */
-#include "Net/netif.h"
+#include <sys/ioctl.h>
+#include <arpa/inet.h>
+#include <net/if.h>
 //TODO: remove qDebug
 #include <QDebug>
 
@@ -184,8 +186,6 @@ void HWMonitor::getProcess()
 
 void HWMonitor::getIfaces()
 {
-	NetIfList ifaces = NetIf::list();
-
 	FILE* f = fopen("/proc/net/dev","r");
 	QByteArray buff;
 	char ch;
@@ -206,13 +206,25 @@ void HWMonitor::getIfaces()
 		iface.download = data[1].toLong();
 		iface.upload = data[9].toLong();
 
-		for(auto elem:ifaces){
-			if( QByteArray(elem.name().c_str()) == iface.name ){
-				iface.ip = QByteArray(elem.ip().toStr().c_str());
-				iface.mac = QByteArray(elem.mac().toStr().c_str());
-				break;
-			}
-		}
+		auto sock = socket( AF_INET, SOCK_DGRAM, IPPROTO_IP ) ;
+		ifreq ifr ;
+		strcpy( ifr.ifr_name, iface.name.toUtf8().data() ) ;
+		// Получаем MAC-адрес интерфейса
+		ioctl( sock, SIOCGIFHWADDR, &ifr ) ;
+		char res[ 24 ] ;
+		sprintf( res, "%02x:%02x:%02x:%02x:%02x:%02x",
+			(unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
+			(unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
+			(unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],
+			(unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[3],
+			(unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[4],
+			(unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[5] ) ;
+		iface.mac = res;
+
+		// Получаем IP-адрес интерфейса
+		ioctl( sock, SIOCGIFADDR, &ifr ) ;
+		//sprintf( res, "%s",.sa_data) ;
+		iface.ip = inet_ntoa( ((struct sockaddr_in *) (&ifr.ifr_ifru.ifru_addr))->sin_addr );
 
 
 		bool find = false;
