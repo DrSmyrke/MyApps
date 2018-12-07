@@ -18,6 +18,10 @@ private slots:
 	void slot_readyRead();
 private:
 	QTcpSocket* m_pClient;
+	bool m_inData = false;
+	Mail m_tmpMail;
+
+	void stop();
 };
 
 class SMTP_Server : public QObject
@@ -25,7 +29,7 @@ class SMTP_Server : public QObject
 	Q_OBJECT
 public:
 	explicit SMTP_Server(QObject *parent = 0);
-	void start();
+	bool start();
 	void stop();
 private slots:
 	void slot_incommingConnection();

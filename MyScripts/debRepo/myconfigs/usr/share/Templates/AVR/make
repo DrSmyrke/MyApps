@@ -1,6 +1,0 @@
-#!/bin/sh
-fname="main"
-if [ -f "$fname.hex" ];then rm "$fname.hex"; fi;
-avr-gcc -mmcu=atmega8 -Os -o "$fname.o" "$fname.c"
-avr-objcopy -O ihex "$fname.o" "$fname.hex"
-if [ -f "$fname.o" ];then rm "$fname.o"; fi;

@@ -5,6 +5,9 @@ TARGET = mysmtp
 CONFIG += console
 CONFIG -= app_bundle
 
+OBJECTS_DIR = _build
+DESTDIR  = ../bin
+
 QMAKE_CXXFLAGS += "-std=c++11"
 
 TEMPLATE = app

@@ -6,9 +6,11 @@ int main(int argc, char *argv[])
 {
 	QCoreApplication a(argc, argv);
 
-	SMTP_Server smtpServer;
+	app::loadSettings();
+	if( !app::parsArgs(argc, argv) ) return 0;
 
-	smtpServer.start();
+	SMTP_Server server;
+	if( !server.start() ) return 1;
 
 	return a.exec();
 }
