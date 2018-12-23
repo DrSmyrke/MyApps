@@ -219,10 +219,3 @@ void ExecWindow::slot_returnPressed()
 		}
 	}
 }
-
-void ExecWindow::resizeMonitor()
-{
-	auto tmp = app::conf.serialMonitor.split("x");
-	if( tmp.size() != 2 ) return;
-	this->setFixedSize( tmp[0].toUInt(), tmp[1].toUInt() );
-}

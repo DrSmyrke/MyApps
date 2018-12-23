@@ -48,5 +48,4 @@ TRANSLATIONS = lang/ru_RU.ts
 RESOURCES += \
     resources.qrc
 
-FORMS += \
-    mainwindow.ui
+FORMS +=

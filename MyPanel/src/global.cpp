@@ -9,14 +9,6 @@ namespace app {
 	void loadSettings()
 	{
 		QSettings settings("MySoft","MyPanel");
-		app::conf.serialPort.port = settings.value("SERIAL/port",app::conf.serialPort.port).toString();
-		app::conf.serialPort.speed = settings.value("SERIAL/speed",app::conf.serialPort.speed).toUInt();
-		app::conf.serialPort.dataBits = settings.value("SERIAL/dataBits",app::conf.serialPort.dataBits).toInt();
-		app::conf.serialPort.parity = settings.value("SERIAL/parity",app::conf.serialPort.parity).toInt();
-		app::conf.serialPort.stopBits = settings.value("SERIAL/stopBits",app::conf.serialPort.stopBits).toInt();
-		app::conf.serialPort.folowControl = settings.value("SERIAL/folowControl",app::conf.serialPort.folowControl).toInt();
-
-		app::conf.serialMonitor = settings.value("MAIN/serialMonitor",app::conf.serialMonitor).toString();
 
 		app::conf.sync.personalDir = settings.value("SYNC/personalDir",app::conf.sync.personalDir).toString();
 		app::conf.sync.user = settings.value("SYNC/user",app::conf.sync.user).toString();
@@ -58,14 +50,6 @@ namespace app {
 
 		QSettings settings("MySoft","MyPanel");
 		settings.clear();
-		settings.setValue("SERIAL/port",app::conf.serialPort.port);
-		settings.setValue("SERIAL/speed",app::conf.serialPort.speed);
-		settings.setValue("SERIAL/dataBits",app::conf.serialPort.dataBits);
-		settings.setValue("SERIAL/parity",app::conf.serialPort.parity);
-		settings.setValue("SERIAL/stopBits",app::conf.serialPort.stopBits);
-		settings.setValue("SERIAL/folowControl",app::conf.serialPort.folowControl);
-
-		settings.setValue("MAIN/serialMonitor",app::conf.serialMonitor);
 
 		settings.setValue("SYNC/personalDir",app::conf.sync.personalDir);
 		settings.setValue("SYNC/user",app::conf.sync.user);

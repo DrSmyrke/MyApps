@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QSystemTrayIcon>
+#include <QMenu>
 #include "widgets/hwmonitorwidget.h"
 #include "global.h"
 
@@ -24,6 +25,7 @@ private:
 	qreal m_yOffset = 0;
 	QRect m_screen;
 	QSystemTrayIcon* m_pTrayIcon;
+	QMenu* m_pMenu;
 
 	void setWindowAction();
 protected:

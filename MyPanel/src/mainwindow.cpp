@@ -41,11 +41,9 @@ MainWindow::MainWindow(QWidget *parent)
 	m_pMenuB = new QPushButton(QIcon("://img/system.png"),"",this);
 	QPushButton* trashB = new QPushButton(QIcon("://img/trash.png"),"",this);
 	QPushButton* winKillerB = new QPushButton(QIcon("://img/exit.png"),"",this);
-	QPushButton* comTermB = new QPushButton(QIcon("://img/terminalCom.png"),"",this);
 	m_pNativeEventFilter = new NativeEventFilter(this);
 	qApp->installNativeEventFilter(m_pNativeEventFilter);  // Устанавилваем его на приложение
 	QPushButton* rsyncB = new QPushButton(QIcon("://img/save.png"),"",this);
-	QPushButton* monitorB = new QPushButton(QIcon("://img/monitor.png"),"",this);
 
 	QWidget* centrWidget = new QWidget(this);
 		QHBoxLayout* hBox = new QHBoxLayout();
@@ -54,9 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
 		hBox->addWidget(m_pMenuB);
 		hBox->addWidget(trashB);
 		hBox->addWidget(winKillerB);
-		hBox->addWidget(comTermB);
 		hBox->addWidget(rsyncB);
-		hBox->addWidget(monitorB);
 	centrWidget->setLayout(hBox);
 
 	setCentralWidget(centrWidget);
@@ -90,8 +86,6 @@ MainWindow::MainWindow(QWidget *parent)
 		QProcess::startDetached(str);
 	});
 
-	connect(monitorB,&QPushButton::clicked,this,[this](){ QProcess::startDetached("mystats"); });
-
 	/*
 	#ifdef QT_DEBUG_pBookmarksWindow,&BookmarksWindow::open
 		m_pMonitorB->click();
@@ -100,30 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
 		m_pMonitorB->click();
 	#endif
 	*/
-	// AUTOSTART
-	for(auto elem:app::conf.autostartList){
-		if( elem.isEmpty() ) continue;
-		auto tmp = elem.split(" ");
-		if( tmp.size() > 0 ){
-			tmp.pop_front();
-			QProcess::startDetached( tmp[0], tmp );
-		}
-	}
 
-	QTimer::singleShot(3000,this,[this](){
-		//automount bookmarks
-		auto list = getMountList();
-		for(auto elem:app::conf.bookmarks){
-			if( elem.mount and !elem.mountDir.isEmpty() and elem.mountOnStart ){
-				QString path = QDir::homePath() + "/mnt/" + elem.mountDir;
-				bool mountF = false;
-				if( list.find(elem.path) != list.end() ){
-					if( list.at(elem.path) == path ) mountF = true;
-				}
-				if( !mountF ) mount(elem.type, elem.path, path);
-			}
-		}
-	});
 
 	reloadBookmarks();
 
@@ -142,6 +113,32 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 	emit signal_stopThreads();
+}
+
+void MainWindow::run()
+{
+	// AUTOSTART
+	for(auto elem:app::conf.autostartList){
+		if( elem.isEmpty() ) continue;
+		auto tmp = elem.split(" ");
+		if( tmp.size() > 0 ){
+			tmp.pop_front();
+			QProcess::startDetached( tmp[0], tmp );
+		}
+	}
+
+	//automount bookmarks
+	auto list = getMountList();
+	for(auto elem:app::conf.bookmarks){
+		if( elem.mount and !elem.mountDir.isEmpty() and elem.mountOnStart ){
+			QString path = QDir::homePath() + "/mnt/" + elem.mountDir;
+			bool mountF = false;
+			if( list.find(elem.path) != list.end() ){
+				if( list.at(elem.path) == path ) mountF = true;
+			}
+			if( !mountF ) mount(elem.type, elem.path, path);
+		}
+	}
 }
 
 void MainWindow::getMainSize()
@@ -227,7 +224,7 @@ void MainWindow::drawDirMenu(QMenu *menu, const QString &path)
 	menu->addSeparator();
 
 	QDir dir = QDir( path );
-	for(auto elem:dir.entryList(QStringList() << "*",QDir::Dirs | QDir::NoDotAndDotDot)){
+	for(auto elem:dir.entryList(QStringList() << "*",QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot)){
 		QString newPath = path + "/" + elem;
 		if( QDir( newPath ).exists() ){
 			QMenu* newMenu = new QMenu( elem, this );

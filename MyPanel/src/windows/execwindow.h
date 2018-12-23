@@ -26,8 +26,6 @@ private:
 	bool m_flag = false;
 	float m_usd = 0;
 	float m_eur = 0;
-
-	void resizeMonitor();
 };
 
 #endif // EXECWINDOW_H

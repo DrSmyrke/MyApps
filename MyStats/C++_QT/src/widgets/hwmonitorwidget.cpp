@@ -75,7 +75,7 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 	drawValue(p,m_xVallOffset + 80,y,m_pHWMonitor->getData().swapUsed + " / " + m_pHWMonitor->getData().swapTotal);
 	y += m_defFontSize + m_yOffset;
 
-	drawParam(p,m_xParamOffset,y,"Apps:");
+	drawParam(p,m_xParamOffset,y,"Process:");
 	drawValue(p,m_xVallOffset,y,m_pHWMonitor->getData().procCount);
 	y += m_defFontSize + m_yOffset;
 	/*

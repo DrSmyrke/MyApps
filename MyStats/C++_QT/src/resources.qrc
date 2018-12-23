@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>monitor.png</file>
+        <file>img/exit.png</file>
+        <file>img/monitor.png</file>
+        <file>lang/ru_RU.qm</file>
     </qresource>
 </RCC>

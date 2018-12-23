@@ -28,15 +28,6 @@ struct SSHConfig{
 	std::vector<QString> kexAlgorithms;
 };
 
-struct SerialPortSettings{
-	QString port;
-	uint32_t speed = 9600;
-	int8_t dataBits = 8;
-	int8_t parity = 0;
-	int8_t stopBits = 1;
-	int8_t folowControl = 0;
-};
-
 struct SyncSettings{
 	QString user;
 	QString server;
@@ -70,8 +61,6 @@ struct ApplicationData{
 };
 
 struct Config{
-	SerialPortSettings serialPort;
-	QString serialMonitor;
 	std::vector<QString> autostartList;
 	SyncSettings sync;
 	QString sshConfDir = QDir::homePath()+"/.ssh";

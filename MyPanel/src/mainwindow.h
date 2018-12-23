@@ -20,6 +20,7 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow(QWidget *parent = 0);
 	~MainWindow();
+    void run();
 private:
 	BookmarksWindow* m_pBookmarksWindow;
 	ExecWindow* m_pExecWindow;
