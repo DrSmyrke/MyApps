@@ -205,7 +205,7 @@ void MainWindow::reloadBookmarks()
 			m_pBookmarksMenu->addMenu( dirM );
 		}else{
 			QAction* dirM = new QAction(QIcon("://img/folder-remote.png"),elem.name, this);
-			connect(dirM,&QAction::triggered,this,[this,elem](){ app::startDetached("xdg-open",QStringList()<<elem.type + "://" + elem.path); });
+			connect(dirM,&QAction::triggered,this,[this,elem](){ app::startDetached("exo-open",QStringList()<<elem.type + "://" + elem.path); });
 			m_pBookmarksMenu->addAction(dirM);
 		}
 	}
@@ -218,7 +218,7 @@ void MainWindow::drawDirMenu(QMenu *menu, const QString &path)
 		connect(actionTerm,&QAction::triggered,this,[this,path](){ app::startDetached("exo-open", QStringList()<<"--working-directory"<<path<<"--launch"<<"TerminalEmulator"); });
 	menu->addAction(actionTerm);
 		QAction* actionDir = new QAction(QIcon("://img/folder.png"),tr("Open in filemanager"), this);
-		connect(actionDir,&QAction::triggered,this,[this,path](){ app::startDetached("xdg-open",QStringList()<<path); });
+		connect(actionDir,&QAction::triggered,this,[this,path](){ app::startDetached("exo-open",QStringList()<<path); });
 	menu->addAction(actionDir);
 	menu->addSeparator();
 
@@ -273,10 +273,10 @@ void MainWindow::slot_sshMenuUpdate()
 	m_pSSHMenu->clear();
 
 		QAction* configM = new QAction(QIcon("://img/system.png"),tr("Config"), this);
-		connect(configM,&QAction::triggered,this,[this](){ app::startDetached("xdg-open",QStringList()<<app::conf.sshConfig); });
+		connect(configM,&QAction::triggered,this,[this](){ app::startDetached("exo-open",QStringList()<<app::conf.sshConfig); });
 	m_pSSHMenu->addAction(configM);
 		QAction* confiDirgM = new QAction(QIcon("://img/folder.png"),"~/.ssh", this);
-		connect(confiDirgM,&QAction::triggered,this,[this](){ app::startDetached("xdg-open",QStringList()<<app::conf.sshConfDir); });
+		connect(confiDirgM,&QAction::triggered,this,[this](){ app::startDetached("exo-open",QStringList()<<app::conf.sshConfDir); });
 	m_pSSHMenu->addAction(confiDirgM);
 	m_pSSHMenu->addSeparator();
 
@@ -367,7 +367,7 @@ void MainWindow::slot_sshMenuUpdate()
 					path = "sftp://" + elem.hostName + ":" + QString::number(elem.port);
 				}
 				QAction* actionDir = new QAction(QIcon("://img/folder.png"),tr("Open in filemanager"), this);
-				connect(actionDir,&QAction::triggered,this,[this,elem,path](){ app::startDetached("xdg-open",QStringList()<<path); });
+				connect(actionDir,&QAction::triggered,this,[this,elem,path](){ app::startDetached("exo-open",QStringList()<<path); });
 				menu->addAction(actionDir);
 			}
 		m_pSSHMenu->addMenu(menu);

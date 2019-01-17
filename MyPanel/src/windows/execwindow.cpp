@@ -187,7 +187,7 @@ void ExecWindow::slot_returnPressed()
 
 	auto text = m_pExecLine->text();
 	if( text.left(1) == "/" ){
-		if( QDir( text ).exists() or QFile( text ).exists() ) app::startDetached("xdg-open",QStringList()<<text);
+		if( QDir( text ).exists() or QFile( text ).exists() ) app::startDetached("exo-open",QStringList()<<text);
 		return;
 	}
 
