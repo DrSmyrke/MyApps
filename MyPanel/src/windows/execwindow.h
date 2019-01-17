@@ -13,8 +13,6 @@ class ExecWindow : public QMainWindow
 public:
 	explicit ExecWindow(QWidget *parent = 0);
 	void open();
-signals:
-	void signal_start(const QString &cmd, const QStringList &args);
 private slots:
 	void slot_textChanged(const QString &text);
 	void slot_highlighted(const QString &text) { m_flag = true;Q_UNUSED(text); }

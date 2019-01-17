@@ -4,9 +4,6 @@
 #include <QDateTime>
 #include <unistd.h>
 
-//TODO: remove qdebug
-#include <QDebug>
-
 ExecWindow::ExecWindow(QWidget *parent) : QMainWindow(parent)
 {
 	m_pStringListModel = new QStringListModel(this);
@@ -190,7 +187,7 @@ void ExecWindow::slot_returnPressed()
 
 	auto text = m_pExecLine->text();
 	if( text.left(1) == "/" ){
-		if( QDir( text ).exists() or QFile( text ).exists() ) emit signal_start("xdg-open",QStringList()<<text);
+		if( QDir( text ).exists() or QFile( text ).exists() ) app::startDetached("xdg-open",QStringList()<<text);
 		return;
 	}
 
@@ -207,15 +204,15 @@ void ExecWindow::slot_returnPressed()
 
 	if( flagTerm ){
 		if( flagSu ) text = "sudo " + text;
-		emit signal_start("exo-open",QStringList()<<"--launch"<<"TerminalEmulator"<<text);
+		app::startDetached("exo-open",QStringList()<<"--launch"<<"TerminalEmulator"<<text);
 	}else{
 		QStringList tmp = text.split(" ");
 		if( flagSu ){
-			emit signal_start("gksu",tmp);
+			app::startDetached("gksu",tmp);
 		}else{
 			QString cmd = tmp[0];
 			tmp.pop_front();
-			emit signal_start(cmd,tmp);
+			app::startDetached(cmd,tmp);
 		}
 	}
 }

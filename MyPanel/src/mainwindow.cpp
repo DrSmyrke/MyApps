@@ -4,7 +4,6 @@
 #include <QDir>
 #include <QFile>
 #include <QDesktopWidget>
-#include <QProcess>
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -74,17 +73,17 @@ MainWindow::MainWindow(QWidget *parent)
 		QString path = QDir::homePath() + "/.local/share/Trash/files";
 		mf::removeDir(path);
 	});
-	connect(winKillerB,&QPushButton::clicked,this,[this](){ QProcess::startDetached("xkill"); });
+	connect(winKillerB,&QPushButton::clicked,this,[this](){ app::startDetached("xkill"); });
 	connect(m_pNativeEventFilter,&NativeEventFilter::activated,this,&MainWindow::slot_GlobalHotkey);
 	m_pNativeEventFilter->setShortcut();
 
 	connect(rsyncB,&QPushButton::clicked,this,&MainWindow::slot_syncSave);
 	connect(m_pBookmarksWindow,&BookmarksWindow::signal_saveBookmarks,this,[this](){ reloadBookmarks(); });
-	connect(m_pExecWindow,&ExecWindow::signal_start,this,[this](const QString &cmd, const QStringList &args){
-		QString str = cmd;
-		if( args.size() > 0 ) str += " " + args.join(" ");
-		QProcess::startDetached(str);
-	});
+//	connect(m_pExecWindow,&ExecWindow::signal_start,this,[this](const QString &cmd, const QStringList &args){
+//		QString str = cmd;
+//		if( args.size() > 0 ) str += " " + args.join(" ");
+//		app::startDetached(str);
+//	});
 
 	/*
 	#ifdef QT_DEBUG_pBookmarksWindow,&BookmarksWindow::open
@@ -123,7 +122,7 @@ void MainWindow::run()
 		auto tmp = elem.split(" ");
 		if( tmp.size() > 0 ){
 			tmp.pop_front();
-			QProcess::startDetached( tmp[0], tmp );
+			app::startDetached( tmp[0], tmp );
 		}
 	}
 
@@ -196,7 +195,7 @@ void MainWindow::reloadBookmarks()
 					connect(dirAction,&QAction::triggered,this,[this, elem, path](){
 						//TDOD: make alert
 						if( !QDir( path ).exists() ) return;
-						QProcess::startDetached("fusermount",QStringList()<<"-u"<<path);
+						app::startDetached("fusermount",QStringList()<<"-u"<<path);
 					});
 					dirM->addAction( dirAction );
 				}
@@ -206,7 +205,7 @@ void MainWindow::reloadBookmarks()
 			m_pBookmarksMenu->addMenu( dirM );
 		}else{
 			QAction* dirM = new QAction(QIcon("://img/folder-remote.png"),elem.name, this);
-			connect(dirM,&QAction::triggered,this,[this,elem](){ QProcess::startDetached("xdg-open",QStringList()<<elem.type + "://" + elem.path); });
+			connect(dirM,&QAction::triggered,this,[this,elem](){ app::startDetached("xdg-open",QStringList()<<elem.type + "://" + elem.path); });
 			m_pBookmarksMenu->addAction(dirM);
 		}
 	}
@@ -216,10 +215,10 @@ void MainWindow::drawDirMenu(QMenu *menu, const QString &path)
 {
 	menu->clear();
 		QAction* actionTerm = new QAction(QIcon("://img/terminal.png"),tr("Open in terminal"), this);
-		connect(actionTerm,&QAction::triggered,this,[this,path](){ QProcess::startDetached("exo-open", QStringList()<<"--working-directory"<<path<<"--launch"<<"TerminalEmulator"); });
+		connect(actionTerm,&QAction::triggered,this,[this,path](){ app::startDetached("exo-open", QStringList()<<"--working-directory"<<path<<"--launch"<<"TerminalEmulator"); });
 	menu->addAction(actionTerm);
 		QAction* actionDir = new QAction(QIcon("://img/folder.png"),tr("Open in filemanager"), this);
-		connect(actionDir,&QAction::triggered,this,[this,path](){ QProcess::startDetached("xdg-open",QStringList()<<path); });
+		connect(actionDir,&QAction::triggered,this,[this,path](){ app::startDetached("xdg-open",QStringList()<<path); });
 	menu->addAction(actionDir);
 	menu->addSeparator();
 
@@ -243,7 +242,7 @@ void MainWindow::mount(const QString &type, const QString &remotePath, const QSt
 
 	//qDebug()<<elem.path<<elem.type<<path;
 	if(type == "sftp"){
-		QProcess::startDetached("sshfs",QStringList()<<remotePath<<path);
+		app::startDetached("sshfs",QStringList()<<remotePath<<path);
 	}
 }
 
@@ -274,10 +273,10 @@ void MainWindow::slot_sshMenuUpdate()
 	m_pSSHMenu->clear();
 
 		QAction* configM = new QAction(QIcon("://img/system.png"),tr("Config"), this);
-		connect(configM,&QAction::triggered,this,[this](){ QProcess::startDetached("xdg-open",QStringList()<<app::conf.sshConfig); });
+		connect(configM,&QAction::triggered,this,[this](){ app::startDetached("xdg-open",QStringList()<<app::conf.sshConfig); });
 	m_pSSHMenu->addAction(configM);
 		QAction* confiDirgM = new QAction(QIcon("://img/folder.png"),"~/.ssh", this);
-		connect(confiDirgM,&QAction::triggered,this,[this](){ QProcess::startDetached("xdg-open",QStringList()<<app::conf.sshConfDir); });
+		connect(confiDirgM,&QAction::triggered,this,[this](){ app::startDetached("xdg-open",QStringList()<<app::conf.sshConfDir); });
 	m_pSSHMenu->addAction(confiDirgM);
 	m_pSSHMenu->addSeparator();
 
@@ -355,7 +354,9 @@ void MainWindow::slot_sshMenuUpdate()
 		QMenu* menu = new QMenu(elem.host,this);
 			if( !elem.host.isEmpty() ){
 				QAction* actionTerm = new QAction(QIcon("://img/terminal.png"),tr("Open in terminal"), this);
-				connect(actionTerm,&QAction::triggered,this,[this,elem](){ QProcess::startDetached("exo-open", QStringList()<<"--working-directory"<<QDir::homePath()<<"--launch"<<"TerminalEmulator"<<"ssh " + elem.host); });
+				connect(actionTerm,&QAction::triggered,this,[this,elem](){
+					app::startDetached("exo-open", QStringList()<<"--working-directory"<<QDir::homePath()<<"--launch"<<"TerminalEmulator"<<"ssh " + elem.host);
+				});
 				menu->addAction(actionTerm);
 			}
 			if( !elem.hostName.isEmpty() and elem.port and elem.localForward.second.isEmpty() ){
@@ -366,7 +367,7 @@ void MainWindow::slot_sshMenuUpdate()
 					path = "sftp://" + elem.hostName + ":" + QString::number(elem.port);
 				}
 				QAction* actionDir = new QAction(QIcon("://img/folder.png"),tr("Open in filemanager"), this);
-				connect(actionDir,&QAction::triggered,this,[this,elem,path](){ QProcess::startDetached("xdg-open",QStringList()<<path); });
+				connect(actionDir,&QAction::triggered,this,[this,elem,path](){ app::startDetached("xdg-open",QStringList()<<path); });
 				menu->addAction(actionDir);
 			}
 		m_pSSHMenu->addMenu(menu);
@@ -380,7 +381,11 @@ void MainWindow::slot_GlobalHotkey(const uint8_t mode, const uint16_t key)
 	switch (key) {
 		case key_type_E: if(mode == key_mode_ctrl) m_pExecWindow->open(); break;
 		//case key_type_Tilda: if(mode == key_mode_ctrl) startDetached("exo-open", QStringList()<<"--working-directory"<<QDir::homePath()<<"--launch"<<"TerminalEmulator"); break;
-	case key_type_Tilda: if(mode == key_mode_ctrl) QProcess::startDetached("exo-open --working-directory " + QDir::homePath() + " --launch TerminalEmulator"); break;
+		case key_type_Tilda:
+			if(mode == key_mode_ctrl){
+				app::startDetached( "exo-open --working-directory " + QDir::homePath() + " --launch TerminalEmulator" );
+			}
+		break;
 	}
 }
 
@@ -456,7 +461,7 @@ void MainWindow::slot_syncSave()
 		args.append("ssh -p " + QString::number(app::conf.sync.port));
 		args.append(QDir::homePath() + "/" + elem);
 		args.append(dir);
-		QProcess::startDetached( "rsync", args );
+		app::startDetached( "rsync", args );
 	}
 }
 

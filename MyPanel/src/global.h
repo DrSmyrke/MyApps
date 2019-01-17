@@ -67,6 +67,9 @@ struct Config{
 	QString sshConfig = QDir::homePath()+"/.ssh/config";
 	std::vector<Bookmark> bookmarks;
 	Valuta valuta;
+	bool verbose = false;
+	uint8_t logLevel = 3;
+	QString logFile;
 };
 
 namespace app {
@@ -76,6 +79,9 @@ namespace app {
 
 	void loadSettings();
 	void saveSettings();
+	bool parsArgs(int argc, char *argv[]);
+	void setLog(const uint8_t logLevel, const QString &mess);
+	void startDetached( const QString &cmd, const QStringList &args = QStringList() );
 }
 
 namespace mf {

@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 	if(translator.load(app::localeName,"://lang/")) a.installTranslator(&translator);
 
 	app::loadSettings();
+	if( !app::parsArgs(argc, argv) ) return 0;
 
 	MainWindow w;
 	w.show();
