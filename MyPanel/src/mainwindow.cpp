@@ -383,7 +383,7 @@ void MainWindow::slot_GlobalHotkey(const uint8_t mode, const uint16_t key)
 		//case key_type_Tilda: if(mode == key_mode_ctrl) startDetached("exo-open", QStringList()<<"--working-directory"<<QDir::homePath()<<"--launch"<<"TerminalEmulator"); break;
 		case key_type_Tilda:
 			if(mode == key_mode_ctrl){
-				app::startDetached( "exo-open --working-directory " + QDir::homePath() + " --launch TerminalEmulator" );
+				app::startDetached("exo-open",QStringList()<<"--working-directory"<<QDir::homePath()<<"--launch"<<"TerminalEmulator");
 			}
 		break;
 	}
@@ -450,6 +450,8 @@ void MainWindow::slot_syncSave()
 	if( app::conf.sync.saveDirs.size() == 0 ) return;
 
 	for(auto elem:app::conf.sync.saveDirs){
+		QStringList args;
+		/*
 		QString dir = app::conf.sync.user + "@" + app::conf.sync.server + ":" + app::conf.sync.workDir + "/" + app::conf.sync.personalDir + "/";
 		//QString cmd = "rsync -azpgtlF --delete-excluded --prune-empty-dirs -e \"ssh -p " + QString::number(app::conf.sync.port) + "\" " + QDir::homePath() + "/" + elem + " " + dir;
 		//startDetached( cmd );
@@ -462,6 +464,15 @@ void MainWindow::slot_syncSave()
 		args.append(QDir::homePath() + "/" + elem);
 		args.append(dir);
 		app::startDetached( "rsync", args );
+		*/
+		args.append( "s37" );
+		args.append( QString::number(app::conf.sync.port) );
+		args.append( QString( QDir::homePath() + "/" + elem ) );
+		args.append( app::conf.sync.user );
+		args.append( app::conf.sync.server );
+		args.append( QString( app::conf.sync.workDir + "/" + app::conf.sync.personalDir + "/" ) );
+		args.append( "y" );
+		app::startDetached( "allinone", args );
 	}
 }
 
