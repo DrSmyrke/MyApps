@@ -23,14 +23,22 @@ QMAKE_CXXFLAGS += "-std=c++11"
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    widgets/hwmonitorwidget.cpp \
+    hwmonitorwidget.cpp \
     hwmonitor.cpp \
-    global.cpp
+    global.cpp \
+    ../../../HomeNET/client.cpp \
+    ../../../HomeNET/myproto.cpp \
+    ../../../HomeNET/searcher.cpp \
+    ../../../myfunctions.cpp
 
 HEADERS  += mainwindow.h \
-    widgets/hwmonitorwidget.h \
+    hwmonitorwidget.h \
     hwmonitor.h \
-    global.h
+    global.h \
+    ../../../HomeNET/client.h \
+    ../../../HomeNET/myproto.h \
+    ../../../HomeNET/searcher.h \
+    ../../../myfunctions.h
 
 TRANSLATIONS = lang/ru_RU.ts
 

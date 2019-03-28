@@ -187,7 +187,7 @@ void ExecWindow::slot_returnPressed()
 
 	auto text = m_pExecLine->text();
 	if( text.left(1) == "/" ){
-		if( QDir( text ).exists() or QFile( text ).exists() ) app::startDetached("exo-open",QStringList()<<text);
+		if( QDir( text ).exists() or QFile( text ).exists() ) app::startDetached("xdg-open",QStringList()<<text);
 		return;
 	}
 
@@ -204,11 +204,13 @@ void ExecWindow::slot_returnPressed()
 
 	if( flagTerm ){
 		if( flagSu ) text = "sudo " + text;
-		app::startDetached("exo-open",QStringList()<<"--launch"<<"TerminalEmulator"<<text);
+		app::startDetached("exec",QStringList()<<"x-terminal-emulator"<<"-e"<<text);
 	}else{
 		QStringList tmp = text.split(" ");
 		if( flagSu ){
-			app::startDetached("gksu",tmp);
+			bool res = app::startDetached("pkexec",tmp);
+			if( !res ) res = app::startDetached("gksu",tmp);
+			if( !res ) res = app::startDetached("ksudo",tmp);
 		}else{
 			QString cmd = tmp[0];
 			tmp.pop_front();

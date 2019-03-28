@@ -5,13 +5,12 @@
 
 namespace app {
 	Config conf;
-	QSize screen;
-	QString localeName;
 
 	void loadSettings()
 	{
-		QSettings settings("MySoft","MyPanel");
+		QSettings settings("MySoft","MySerialTerminal");
 
+		/*
 		app::conf.sync.personalDir = settings.value("SYNC/personalDir",app::conf.sync.personalDir).toString();
 		app::conf.sync.user = settings.value("SYNC/user",app::conf.sync.user).toString();
 		app::conf.sync.server = settings.value("SYNC/server",app::conf.sync.server).toString();
@@ -44,13 +43,15 @@ namespace app {
 			if( !bm.name.isEmpty() and !bm.type.isEmpty() and !bm.path.isEmpty() ) app::conf.bookmarks.push_back( bm );
 		}
 		settings.endGroup();
+		*/
 	}
 
 	void saveSettings()
 	{
+		/*
 		uint16_t i = 0;
 
-		QSettings settings("MySoft","MyPanel");
+		QSettings settings("MySoft","MySerialTerminal");
 		settings.clear();
 
 		settings.setValue("SYNC/personalDir",app::conf.sync.personalDir);
@@ -84,6 +85,7 @@ namespace app {
 			settings.setValue("BOOKMARKS/" + QString::number(i),str);
 			i++;
 		}
+		*/
 	}
 
 	bool parsArgs(int argc, char *argv[])
@@ -131,12 +133,11 @@ namespace app {
 		fclose(f);
 	}
 
-	bool startDetached(const QString &cmd, const QStringList &args)
+	void startDetached(const QString &cmd, const QStringList &args)
 	{
 		QString str = cmd + " " + args.join(" ");
 		auto res = QProcess::startDetached( cmd, args );
 		app::setLog(1,QString("[EXEC %1]: %2").arg( (res)?"true":"false" ).arg(str));
-		return res;
 	}
 
 }

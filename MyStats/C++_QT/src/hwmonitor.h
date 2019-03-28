@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "global.h"
+#include "../../../myfunctions.h"
 
 struct Iface{
 	QString ip;

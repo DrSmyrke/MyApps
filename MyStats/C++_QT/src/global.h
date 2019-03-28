@@ -6,14 +6,13 @@
 
 struct Config{
 	bool showData = false;
+	bool verbose			= true;
+	uint8_t logLevel		= 3;
+	QString logFile			= "/tmp/mystats.log";
 };
 
 namespace app {
 	extern Config conf;
-}
-
-namespace mf {
-	QString getSize(const long val);
 }
 
 #endif // GLOBAL_H

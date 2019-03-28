@@ -1,9 +1,8 @@
 #include "nativeeventfilter.h"
 #include <QVector>
-#include <QX11Info>
+#include <xcb/xcb.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <xcb/xcb.h>
 
 namespace
 {
@@ -33,7 +32,7 @@ bool NativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *mes
 {
 	Q_UNUSED(eventType)
 	Q_UNUSED(result)
-
+	printf("NativeEventFilter::nativeEventFilter\n");
 	/* В вот обработка события строится уже на библиотеке XCB вместо Xlib.
 	 * Вроде как, получая событие Qt знает его в качестве XCB события,
 	 * но не знает его в качестве события Xlib, хотя использовать более
@@ -60,7 +59,8 @@ bool NativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *mes
 							case Mod1Mask: mode = key_mode_lalt; break;
 							case Mod4Mask: mode = key_mode_rwin; break;
 						}
-						emit activated(mode,XKeycodeToKeysym(m_pDisplay,key.first,1));
+						auto keySym = XKeycodeToKeysym(m_pDisplay,key.first,1);
+						emit activated(mode,keySym);
 						return true;
 					}
 				}

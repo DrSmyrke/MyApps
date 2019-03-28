@@ -1,2 +1,0 @@
-#!/bin/bash
-g++ MyPanel.cpp -o MyPanel `pkg-config --cflags --libs gtk+-2.0`

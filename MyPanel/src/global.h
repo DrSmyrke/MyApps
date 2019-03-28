@@ -52,13 +52,13 @@ struct Valuta{
 	QString dateUpdate;
 };
 
-struct ApplicationData{
-	bool terminal = false;
-	QString name;
-	QString comment;
-	QString exec;
-	QString icon;
-};
+//struct ApplicationData{
+//	bool terminal = false;
+//	QString name;
+//	QString comment;
+//	QString exec;
+//	QString icon;
+//};
 
 struct Config{
 	std::vector<QString> autostartList;
@@ -81,7 +81,7 @@ namespace app {
 	void saveSettings();
 	bool parsArgs(int argc, char *argv[]);
 	void setLog(const uint8_t logLevel, const QString &mess);
-	void startDetached( const QString &cmd, const QStringList &args = QStringList() );
+	bool startDetached( const QString &cmd, const QStringList &args = QStringList() );
 }
 
 namespace mf {

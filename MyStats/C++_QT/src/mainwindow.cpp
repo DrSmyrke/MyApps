@@ -7,20 +7,11 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
-	QIcon appIco = QIcon("://img/monitor.png");
 
-	m_pMenu = new QMenu(this);
-		QAction* exitAction = new QAction(QIcon("://img/exit.png"),tr("Exit"), this);
-		connect(exitAction,&QAction::triggered,this,&QApplication::exit);
-		m_pMenu->addAction( exitAction );
 	m_pTimer = new QTimer(this);
 		m_pTimer->setInterval(250);
 	m_pHWMonitorWidget = new HWMonitorWidget(this);
 		m_pHWMonitorWidget->setMouseTracking(true);
-	m_pTrayIcon = new QSystemTrayIcon(this);
-		m_pTrayIcon->setIcon( appIco );
-		m_pTrayIcon->setContextMenu( m_pMenu );
-		m_pTrayIcon->show();
 
 	setCentralWidget(m_pHWMonitorWidget);
 	//setWindowFlags(Qt::WindowStaysOnBottomHint | Qt::CustomizeWindowHint | Qt::Tool);
@@ -28,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 	setBaseSize( 270, 240 );
 	setFixedWidth( 270 );
 	setAttribute(Qt::WA_TranslucentBackground);
+	setWindowIcon( QIcon("://img/monitor.png") );
 
 	connect(m_pHWMonitorWidget,&HWMonitorWidget::signal_heightChangeRequest,this,[this](const uint16_t newValue){
 		this->setFixedHeight( newValue );
@@ -56,24 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
 			default: break;
 		}
 	});
-	connect(m_pTrayIcon,&QSystemTrayIcon::activated,this,[this](){
-		if( !m_pMenu->isHidden() ){
-			m_pTimer->stop();
-			this->hide();
-			app::conf.showData = false;
-			return;
-		}
-		if( !this->isHidden() ){
-			m_pTimer->stop();
-			this->hide();
-			app::conf.showData = false;
-		}else{
-			m_pTimer->start();
-			this->show();
-			app::conf.showData = true;
-			setWindowAction();
-		}
-	});
+	m_pTimer->start();
 }
 
 MainWindow::~MainWindow()

@@ -5,8 +5,6 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <net/if.h>
-//TODO: remove qDebug
-#include <QDebug>
 
 HWMonitor::HWMonitor(QObject *parent) : QObject(parent)
 {
@@ -42,15 +40,14 @@ void HWMonitor::slot_timer()
 
 void HWMonitor::getUptime()
 {
-	FILE* f = fopen("/proc/uptime","r");
 	QByteArray buff;
-	char ch;
-	uint8_t n;
-	while( (n = fread(&ch,1,1,f) ) > 0 ){
-		if(ch == ' ' or ch == '	') break;
-		buff.append(ch);
+	QFile f("/proc/uptime");
+	if( !f.exists() ) return;
+	if( f.open( QIODevice::ReadOnly ) ){
+		auto line = f.readLine().split(' ');
+		f.close();
+		buff.append( line[0] );
 	}
-	fclose(f);
 
 	float ut = buff.toFloat();
 	uint8_t h = ut / 60.0 / 60.0;
@@ -68,15 +65,14 @@ void HWMonitor::getCpu()
 	static uint32_t diff_idle = 0;
 	static uint32_t diff_total = 0;
 
-	FILE* f = fopen("/proc/stat","r");
 	QByteArray buff;
-	char ch;
-	uint8_t n;
-	while( (n = fread(&ch,1,1,f) ) > 0 ){
-		if(ch == '\n') break;
-		buff.append(ch);
+	QFile f("/proc/stat");
+	if( !f.exists() ) return;
+	if( f.open( QIODevice::ReadOnly ) ){
+		buff = f.readLine();
+		f.close();
 	}
-	fclose(f);
+
 
 	buff.replace(QByteArray("  "), QByteArray(" "));
 	if( buff.indexOf("cpu ") == 0 ) buff.remove(0,4);
@@ -99,39 +95,13 @@ void HWMonitor::getCpu()
 
 void HWMonitor::getMem()
 {
-	/*
-	QProcess cmd;
-	cmd.start("free -b");
-	cmd.waitForFinished(250);
-	if( cmd.bytesAvailable() > 0 ){
-		auto tmp = cmd.readAll().split('\n');
-		if( tmp.size() < 4 ) return;
-		while( tmp[1].contains( QByteArray("  ") ) ) tmp[1].replace("  ", QByteArray(" "));
-		while( tmp[2].contains( QByteArray("  ") ) ) tmp[2].replace("  ", QByteArray(" "));
-		while( tmp[3].contains( QByteArray("  ") ) ) tmp[3].replace("  ", QByteArray(" "));
-		auto tmpMem = tmp[1].split(' ');
-		if( tmpMem.size() == 7 ){
-			m_data.memTotal = mf::getSize( tmpMem[1].toLong() );
-			m_data.memUsed = mf::getSize( tmpMem[2].toLong() );
-			m_data.mem = tmpMem[2].toFloat() / ( tmpMem[1].toFloat() / 100.0 );
-		}
-		auto tmpSwap = tmp[2].split(' ');
-		bool test;
-		tmpSwap[1].toUInt(&test);
-		if( !test ) tmpSwap = tmp[3].split(' ');
-		if( tmpSwap.size() == 4 ){
-			m_data.swapTotal = mf::getSize( tmpSwap[1].toLong() );
-			m_data.swapUsed = mf::getSize( tmpSwap[2].toLong() );
-			m_data.swap = tmpSwap[2].toFloat() / ( tmpSwap[1].toFloat() / 100.0 );
-		}
-	}
-	*/
-	FILE* fmem = fopen("/proc/meminfo","r");
 	QByteArray buffmem;
-	char ch;
-	uint8_t n;
-	while( (n = fread(&ch,1,1,fmem) ) > 0 ) buffmem.append(ch);
-	fclose(fmem);
+	QFile fmem("/proc/meminfo");
+	if( !fmem.exists() ) return;
+	if( fmem.open( QIODevice::ReadOnly ) ){
+		buffmem = fmem.readAll();
+		fmem.close();
+	}
 
 	long memTotal = 0;
 	long memFree = 0;
@@ -157,10 +127,13 @@ void HWMonitor::getMem()
 	// SWAPS
 	//if( app::conf.swapMode == swap_mode_static ){
 		m_data.swaps.clear();
-		FILE* f = fopen("/proc/swaps","r");
 		QByteArray buff;
-		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
-		fclose(f);
+		QFile f("/proc/meminfo");
+		if( !f.exists() ) return;
+		if( f.open( QIODevice::ReadOnly ) ){
+			buff = f.readAll();
+			f.close();
+		}
 
 		for(auto str:buff.split('\n')){
 			str.replace("	", QByteArray(" "));
@@ -188,10 +161,12 @@ void HWMonitor::getIfaces()
 {
 	FILE* f = fopen("/proc/net/dev","r");
 	QByteArray buff;
-	char ch;
-	uint8_t n;
-	while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
-	fclose(f);
+	if( f ){
+		char ch;
+		uint8_t n;
+		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
+		fclose(f);
+	}
 
 	for(auto str:buff.split('\n')){
 		if( !str.contains( QByteArray(": ") ) ) continue;
@@ -246,13 +221,16 @@ void HWMonitor::getIfaces()
 
 void HWMonitor::getDevs()
 {
+	QByteArray buff;
 	m_data.disks.clear();
 	FILE* f = fopen("/proc/self/mountinfo","r");
-	QByteArray buff;
-	char ch;
-	uint8_t n;
-	while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
-	fclose(f);
+
+	if( f ){
+		char ch;
+		uint8_t n;
+		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
+		fclose(f);
+	}
 
 	for(auto str:buff.split('\n')){
 		auto tmp = str.split(' ');
