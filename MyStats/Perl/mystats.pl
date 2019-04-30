@@ -362,7 +362,7 @@ sub win_clicked{
 	my ($widget,$event) = @_;
 	my $button_code = $event->button();
 	my $action=0;
-	#print "RELEASE: $button_code [$gData{hoverDisk}]\n";
+	#print "RELEASE: $button_code \n";
 	# open disk
 	if($gData{"hoverDisk"} ne "" and $gData{"ejectDisk"} eq "" and $button_code eq 1){
 		if(fork==0){exec "xdg-open $gData{hoverDisk}";kill 'TERM',$$;}
@@ -566,7 +566,10 @@ sub drawUI{
 					}
 					$cr->rectangle(3,$gData{"contHeight"}-12,$gData{"winWidth"}-6,$settings{"yi"}*2);
 					$cr->fill();
-					$gData{"hoverDisk"}="$mount";
+					$gData{"hoverDisk"}=$mount;
+				}else{
+					$gData{"hoverDisk"}="";
+					$gData{"hoverDiskCounter"}=0;
 				}
 			}
 
