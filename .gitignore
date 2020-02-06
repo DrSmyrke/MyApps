@@ -3,3 +3,8 @@ Image Editor/build*
 build-src*
 bin/*
 *build-*
+bin
+build
+myfunctions.cpp
+myfunctions.h
+

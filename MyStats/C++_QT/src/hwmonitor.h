@@ -3,25 +3,39 @@
 
 #include <QObject>
 #include "global.h"
-#include "../../../myfunctions.h"
+#include "myfunctions.h"
 
 struct Iface{
 	QString ip;
 	QString mac;
 	QString name;
-	long upload = 0;
-	long download = 0;
-	long uploadSpeed = 0;
-	long downloadSpeed = 0;
+
+#if __WORDSIZE == 64
+	uint64_t upload = 0;
+	uint64_t download = 0;
+	uint64_t uploadSpeed = 0;
+	uint64_t downloadSpeed = 0;
+#else
+	uint32_t upload = 0;
+	uint32_t download = 0;
+	uint32_t uploadSpeed = 0;
+	uint32_t downloadSpeed = 0;
+#endif
 };
 
 struct Disk{
 	QString name;
 	QString mount;
 	QString fstype;
-	long size = -1;
-	long used = 0;
-	long avail = 0;
+#if __WORDSIZE == 64
+	uint64_t size = -1;
+	uint64_t used = 0;
+	uint64_t avail = 0;
+#else
+	uint32_t size = -1;
+	uint32_t used = 0;
+	uint32_t avail = 0;
+#endif
 	float usedPrz = 0;
 };
 

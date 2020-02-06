@@ -65,7 +65,7 @@ void MainWindow::setWindowAction()
 	//auto y = QCursor::pos().y();
 	//qDebug()<<QApplication::desktop()->geometry()<<primaryScreen;
 
-	this->move( primaryScreen.width() - this->width() - 5, primaryScreen.height() - this->height() - 40 );
+	this->move( primaryScreen.x() + primaryScreen.width() - this->width() - 5, primaryScreen.y() + primaryScreen.height() - this->height() - 33 );
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -80,7 +80,16 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-	m_pHWMonitorWidget->mouseClickToObject();
+	if( !m_pHWMonitorWidget->mouseClickToObject() ){
+		int primaryScreenNum = QApplication::desktop()->primaryScreen();
+		auto primaryScreen = QApplication::desktop()->screenGeometry( primaryScreenNum );
+		if( m_hide ){
+			this->move( primaryScreen.x() + primaryScreen.width() - this->width() - 5, primaryScreen.y() + primaryScreen.height() - this->height() - 33 );
+		}else{
+			this->move( primaryScreen.x() + primaryScreen.width() - 5, primaryScreen.y() + primaryScreen.height() - this->height() - 33 );
+		}
+		m_hide = !m_hide;
+	}
 
 	QMainWindow::mouseReleaseEvent(event);
 }

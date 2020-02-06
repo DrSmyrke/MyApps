@@ -5,7 +5,7 @@
 #include <QPaintEvent>
 #include "hwmonitor.h"
 #include "global.h"
-#include "../../../myfunctions.h"
+#include "myfunctions.h"
 
 struct IfaceParam{
 	uint16_t y;

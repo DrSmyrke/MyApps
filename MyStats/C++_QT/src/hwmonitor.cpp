@@ -103,16 +103,25 @@ void HWMonitor::getMem()
 		fmem.close();
 	}
 
-	long memTotal = 0;
-	long memFree = 0;
-	long swapTotal = 0;
-	long swapFree = 0;
+#if __WORDSIZE == 64
+	uint64_t memTotal = 0;
+	uint64_t memFree = 0;
+	uint64_t swapTotal = 0;
+	uint64_t swapFree = 0;
+#else
+	uint32_t memTotal = 0;
+	uint32_t memFree = 0;
+	uint32_t swapTotal = 0;
+	uint32_t swapFree = 0;
+#endif
+
+
 	for(auto str:buffmem.split('\n')){
 		while( str.contains( QByteArray("  ") ) ) str.replace("  ", QByteArray(" "));
 		auto data = str.split(' ');
 		if( data.size() != 3 ) continue;
 		if( data[0].contains( QByteArray("MemTotal")  ) ) memTotal = data[1].toLong() * 1024;
-		if( data[0].contains( QByteArray("MemFree")  ) ) memFree = data[1].toLong() * 1024;
+		if( data[0].contains( QByteArray("MemAvailable")  ) ) memFree = data[1].toLong() * 1024;
 		if( data[0].contains( QByteArray("SwapTotal")  ) ) swapTotal = data[1].toLong() * 1024;
 		if( data[0].contains( QByteArray("SwapFree")  ) ) swapFree = data[1].toLong() * 1024;
 	}
@@ -234,19 +243,20 @@ void HWMonitor::getDevs()
 
 	for(auto str:buff.split('\n')){
 		auto tmp = str.split(' ');
-		if( tmp.size() != 10 ) continue;
+		if( tmp.size() < 10 ) continue;
 		struct statfs fs;
 		if( statfs( tmp[4].data(), &fs ) != 0 ) continue;
 
 		Disk disk;
-		disk.fstype = tmp[7];
+		disk.fstype = tmp[8];
 		if( disk.fstype == "tmpfs" || disk.fstype == "debugfs" || disk.fstype == "fusectl"
-				|| disk.fstype == "fusectl" || disk.fstype == "proc"
-				|| disk.fstype == "sysfs" || disk.fstype == "devtmpfs"
-				|| disk.fstype == "pstore" || disk.fstype == "binfmt_misc"
-				|| disk.fstype == "fuse.gvfsd-fuse" || disk.fstype == "securityfs"
-				|| disk.fstype == "cgroup" || disk.fstype == "devpts" ) continue;
-		disk.name = tmp[8];
+				|| disk.fstype == "fusectl" || disk.fstype == "proc" || disk.fstype == "efivarfs"
+				|| disk.fstype == "sysfs" || disk.fstype == "devtmpfs" || disk.fstype == "autofs"
+				|| disk.fstype == "pstore" || disk.fstype == "binfmt_misc" || disk.fstype == "mqueue"
+				|| disk.fstype == "fuse.gvfsd-fuse" || disk.fstype == "securityfs" || disk.fstype == "hugetlbfs"
+				|| disk.fstype == "cgroup" || disk.fstype == "cgroup2" || disk.fstype == "devpts"
+				|| disk.fstype == "configfs") continue;
+		disk.name = tmp[9];
 		disk.size = fs.f_bsize * fs.f_blocks;
 		disk.avail = fs.f_bsize * fs.f_bavail;
 		disk.mount = tmp[4];

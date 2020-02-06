@@ -4,7 +4,8 @@
 #include <QObject>
 #include <QUdpSocket>
 #include "../HomeNET/myproto.h"
-#include "../myfunctions.h"
+#include "myfunctions.h"
+#include "global.h"
 
 class Searcher : public QObject
 {

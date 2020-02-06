@@ -5,7 +5,8 @@
 #include <QTcpSocket>
 #include <QHostAddress>
 #include "myproto.h"
-#include "../myfunctions.h"
+#include "global.h"
+#include "myfunctions.h"
 
 class Client : public QObject
 {

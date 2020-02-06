@@ -22,6 +22,7 @@ private:
 	qreal m_xOffset = 0;
 	qreal m_yOffset = 0;
 	QRect m_screen;
+	bool m_hide = false;
 
 	void setWindowAction();
 protected:

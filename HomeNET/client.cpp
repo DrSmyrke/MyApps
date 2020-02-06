@@ -1,6 +1,4 @@
 #include "client.h"
-//TODO: remove qDebug()
-#include <QDebug>
 
 Client::Client(QTcpSocket *socket, const uint8_t socketType, QObject *parent)
 	: QObject(parent)
@@ -32,7 +30,7 @@ bool Client::open(const QHostAddress &addr, const uint16_t port)
 	m_pClient->waitForConnected(100);
 	bool res = m_pClient->isOpen();
 	if( res ) send( myproto::buidPkt( myproto::getPkt( pkt_channel_comunication, pkt_type_helo ) ) );
-	mf::setLog(1,QString("Client::open [%1:%2]... [%3]").arg(addr.toString()).arg(port).arg(res));
+	app::setLog(1,QString("Client::open [%1:%2]... [%3]").arg(addr.toString()).arg(port).arg(res));
 	return res;
 }
 

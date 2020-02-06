@@ -1,5 +1,5 @@
 #include "myproto.h"
-#include "../myfunctions.h"
+#include "myfunctions.h"
 
 namespace myproto {
 	DefaultConfig conf;

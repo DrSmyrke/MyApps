@@ -9,14 +9,14 @@ Searcher::Searcher(QObject *parent) :
 
 	connect( m_pSocket, &QUdpSocket::readyRead, this, &Searcher::slot_readyRead );
 
-	mf::setLog(1,QString("Searcher::created"));
+	app::setLog(1,QString("Searcher::created"));
 }
 
 void Searcher::start()
 {
 	m_pSocket->bind( myproto::conf.port, QUdpSocket::ShareAddress );
 
-	mf::setLog(1,QString("Searcher::started on [%1] port").arg(myproto::conf.port));
+	app::setLog(1,QString("Searcher::started on [%1] port").arg(myproto::conf.port));
 }
 
 void Searcher::stop()

@@ -1,8 +1,9 @@
-#include <QPoint>
-#include <QString>
-
 #ifndef GLOBAL_H
 #define GLOBAL_H
+
+#include <QString>
+#include <QDir>
+#include <QHostAddress>
 
 struct Config{
 	bool showData = false;
@@ -13,6 +14,8 @@ struct Config{
 
 namespace app {
 	extern Config conf;
+
+	void setLog(const uint8_t logLevel, const QString &mess);
 }
 
 #endif // GLOBAL_H

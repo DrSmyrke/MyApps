@@ -11,8 +11,14 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = mystats
 TEMPLATE = app
 
-OBJECTS_DIR = _build
-DESTDIR  = ../bin
+CONFIG(debug, debug|release):CONFIGURATION=debug
+CONFIG(release, debug|release):CONFIGURATION=release
+
+OBJECTS_DIR         = ../build/obj/$${CONFIGURATION}
+MOC_DIR             = ../build/$${CONFIGURATION}
+RCC_DIR             = ../build/rcc
+UI_DIR              = ../build/ui
+DESTDIR             = ../bin/$${TARGET}
 
 win32|win64{
     RC_FILE=  index.rc
@@ -29,7 +35,7 @@ SOURCES += main.cpp\
     ../../../HomeNET/client.cpp \
     ../../../HomeNET/myproto.cpp \
     ../../../HomeNET/searcher.cpp \
-    ../../../myfunctions.cpp
+    myfunctions.cpp
 
 HEADERS  += mainwindow.h \
     hwmonitorwidget.h \
@@ -38,9 +44,21 @@ HEADERS  += mainwindow.h \
     ../../../HomeNET/client.h \
     ../../../HomeNET/myproto.h \
     ../../../HomeNET/searcher.h \
-    ../../../myfunctions.h
+    myfunctions.h
 
 TRANSLATIONS = lang/ru_RU.ts
 
 RESOURCES += \
     resources.qrc
+
+exists(./myLibs.pri):include(./myLibs.pri)
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+build_pass:CONFIG(debug, debug|release) {
+    unix: TARGET = $$join(TARGET,,,_debug)
+    else: TARGET = $$join(TARGET,,,d)
+}

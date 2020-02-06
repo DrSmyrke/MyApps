@@ -189,7 +189,12 @@ bool HWMonitorWidget::mouseClickToObject()
 	}
 	if( m_swapParam.clear ){
 		if( chkHoverSwap( m_swapParam.y ) ){
-			QProcess::startDetached("gksu \"swapspace -e\" || gksu \"swapoff -a && swapon -a\" || ksudo \"swapoff -a && swapon -a\" || xterm -e \"sudo swapoff -a && sudo swapon -a\"");
+			//QProcess::startDetached("pkexec \"swapoff -a && swapon -a\" || pkexec \"swapspace -e\"");
+			//mf::startDetached();
+			//if( !mf::startDetached( "pkexec", QStringList() << "'swapspace -e'" ) ){
+				mf::startDetached( "pkexec", QStringList() << "swapoff" << "-a" );
+				mf::startDetached( "pkexec", QStringList() << "swapon" << "-a" );
+			//}
 			m_swapParam.hover = false;
 			find = true;
 		}
