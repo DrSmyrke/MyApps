@@ -3,7 +3,6 @@
 
 #include <QString>
 #include <QDir>
-#include <QHostAddress>
 
 struct Config{
 	bool showData = false;

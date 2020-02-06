@@ -1,10 +1,12 @@
 #include "hwmonitor.h"
 #include <QDateTime>
 #include <QDir>
+#include <QFile>
 #include <sys/statfs.h>    /* or <sys/vfs.h> */
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <unistd.h>
 
 HWMonitor::HWMonitor(QObject *parent) : QObject(parent)
 {
@@ -30,7 +32,6 @@ void HWMonitor::slot_timer()
 	if(counter == 3){
 		getIfaces();
 	}
-
 	if(counter == 4){
 		getDevs();
 		counter = 0;
@@ -96,12 +97,27 @@ void HWMonitor::getCpu()
 void HWMonitor::getMem()
 {
 	QByteArray buffmem;
+
 	QFile fmem("/proc/meminfo");
 	if( !fmem.exists() ) return;
 	if( fmem.open( QIODevice::ReadOnly ) ){
 		buffmem = fmem.readAll();
 		fmem.close();
+	}else{
+		app::setLog( 2, QString("/proc/meminfo is NOT open [%1]").arg( fmem.errorString() ) );
+		return;
 	}
+
+//	FILE* fmem = fopen("/proc/meminfo","r");
+//	if( fmem ){
+//		char ch;
+//		uint8_t n;
+//		while( (n = fread(&ch,1,1,fmem) ) > 0 ) buffmem.append(ch);
+//		fclose(fmem);
+//	}else{
+//		return;
+//	}
+
 
 #if __WORDSIZE == 64
 	uint64_t memTotal = 0;
@@ -158,7 +174,7 @@ void HWMonitor::getMem()
 void HWMonitor::getProcess()
 {
 	QDir dir = QDir("/proc");
-	auto dirs = dir.entryList(QStringList() << "*",QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+	auto dirs = dir.entryList( QStringList() << "*", QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks );
 	uint16_t count = 0;
 	for(auto elem:dirs){
 		if( elem.toInt() > 0 ) count++;
@@ -168,13 +184,25 @@ void HWMonitor::getProcess()
 
 void HWMonitor::getIfaces()
 {
-	FILE* f = fopen("/proc/net/dev","r");
 	QByteArray buff;
-	if( f ){
-		char ch;
-		uint8_t n;
-		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
-		fclose(f);
+
+//	FILE* f = fopen("/proc/net/dev","r");
+//
+//	if( f ){
+//		char ch;
+//		uint8_t n;
+//		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
+//		fclose(f);
+//	}
+
+	QFile f("/proc/net/dev");
+	if( !f.exists() ) return;
+	if( f.open( QIODevice::ReadOnly ) ){
+		buff = f.readAll();
+		f.close();
+	}else{
+		app::setLog( 2, QString("/proc/net/dev is NOT open") );
+		return;
 	}
 
 	for(auto str:buff.split('\n')){
@@ -209,7 +237,7 @@ void HWMonitor::getIfaces()
 		ioctl( sock, SIOCGIFADDR, &ifr ) ;
 		//sprintf( res, "%s",.sa_data) ;
 		iface.ip = inet_ntoa( ((struct sockaddr_in *) (&ifr.ifr_ifru.ifru_addr))->sin_addr );
-
+		close( sock );
 
 		bool find = false;
 		for(auto &elem:m_data.ifaces){
@@ -232,13 +260,23 @@ void HWMonitor::getDevs()
 {
 	QByteArray buff;
 	m_data.disks.clear();
-	FILE* f = fopen("/proc/self/mountinfo","r");
+//	FILE* f = fopen("/proc/self/mountinfo","r");
 
-	if( f ){
-		char ch;
-		uint8_t n;
-		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
-		fclose(f);
+//	if( f ){
+//		char ch;
+//		uint8_t n;
+//		while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
+//		fclose(f);
+//	}
+
+	QFile f("/proc/self/mountinfo");
+	if( !f.exists() ) return;
+	if( f.open( QIODevice::ReadOnly ) ){
+		buff = f.readAll();
+		f.close();
+	}else{
+		app::setLog( 2, QString("/proc/self/mountinfo is NOT open") );
+		return;
 	}
 
 	for(auto str:buff.split('\n')){
