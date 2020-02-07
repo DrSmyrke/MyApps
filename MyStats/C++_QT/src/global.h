@@ -5,7 +5,7 @@
 #include <QDir>
 
 struct Config{
-	bool showData = false;
+	bool showData			= true;
 	bool verbose			= true;
 	uint8_t logLevel		= 3;
 	QString logFile			= "/tmp/mystats.log";

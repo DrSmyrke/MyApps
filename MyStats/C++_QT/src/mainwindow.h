@@ -21,8 +21,7 @@ private:
 	bool m_mouseMove = false;
 	qreal m_xOffset = 0;
 	qreal m_yOffset = 0;
-	QRect m_screen;
-	bool m_hide = false;
+	int m_prewWidth;
 
 	void setWindowAction();
 protected:

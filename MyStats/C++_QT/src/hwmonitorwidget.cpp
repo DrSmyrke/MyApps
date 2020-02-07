@@ -9,10 +9,10 @@ HWMonitorWidget::HWMonitorWidget(QWidget *parent) : QWidget(parent)
 
 void HWMonitorWidget::slot_update()
 {
-	if( !app::conf.showData ) return;
 	m_pHWMonitor->slot_timer();
-	if( m_heightChangeF ) emit signal_heightChangeRequest( m_prewY );
 	this->update();
+	if( !app::conf.showData ) return;
+	if( m_heightChangeF ) emit signal_heightChangeRequest( m_prewY );
 }
 
 void HWMonitorWidget::paintEvent(QPaintEvent *event)
@@ -25,6 +25,8 @@ void HWMonitorWidget::paintEvent(QPaintEvent *event)
 	p.setPen(Qt::NoPen);
 	p.setBrush(QBrush(QColor(25,25,25,240)));
 	p.drawRect(0,0,this->width(),this->height());
+
+	if( !app::conf.showData ) return;
 
 //	if( app::conf.fixed ){
 //		p.setPen(Qt::red);
