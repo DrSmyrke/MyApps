@@ -63,9 +63,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 	connect(m_pMenuB,&QPushButton::clicked,this,[this](){
 		getMainSize();
-		auto x = m_pMenuB->pos().x() + (app::screen.width()/2)-(m_windowSize.width()/2);
+		m_pMainMenu->move( this->mapToGlobal( m_pMenuB->pos() ).x(), 10 );
 		m_pMainMenu->show();
-		m_pMainMenu->move( x, 10 );
 		reloadBookmarks();
 		drawDirMenu( m_pHomeDirMenu, QDir::homePath() );
 	});
@@ -116,16 +115,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::run()
 {
-	// AUTOSTART
-	for(auto elem:app::conf.autostartList){
-		if( elem.isEmpty() ) continue;
-		auto tmp = elem.split(" ");
-		if( tmp.size() > 0 ){
-			tmp.pop_front();
-			app::startDetached( tmp[0], tmp );
-		}
-	}
-
 	//automount bookmarks
 	auto list = getMountList();
 	for(auto elem:app::conf.bookmarks){
@@ -142,10 +131,11 @@ void MainWindow::run()
 
 void MainWindow::getMainSize()
 {
+	int primaryScreenNum = QApplication::desktop()->primaryScreen();
+	app::screen = QApplication::desktop()->screenGeometry( primaryScreenNum );
+
 	m_windowSize.setWidth( this->size().width() );
 	m_windowSize.setHeight( this->size().height() );
-	app::screen.setWidth( QApplication::desktop()->screenGeometry().width() );
-	app::screen.setHeight( QApplication::desktop()->screenGeometry().height() );
 
 //	qDebug()<<QApplication::desktop()->screenGeometry();
 //	qDebug()<<QApplication::desktop()->availableGeometry();
@@ -157,9 +147,9 @@ void MainWindow::getMainSize()
 void MainWindow::panelHide()
 {
 	getMainSize();
-	//move( (app::screen.width()/2)-(m_windowSize.width()/2) , 0 - m_windowSize.height() + 5);
-	move( (app::screen.width()/2)-(m_windowSize.width()/2) , -30);
+	this->move( app::screen.x() + (app::screen.width()/2)-(m_windowSize.width()/2) , app::screen.y() - this->height() + 5);
 	setWindowOpacity( 0.5 );
+	m_pExecWindow->move( app::screen.x() + (app::screen.width()/2)-(m_pExecWindow->width()/2), this->pos().y() + this->height() + 5);
 }
 
 void MainWindow::reloadBookmarks()
@@ -214,9 +204,9 @@ void MainWindow::reloadBookmarks()
 void MainWindow::drawDirMenu(QMenu *menu, const QString &path)
 {
 	menu->clear();
-		QAction* actionTerm = new QAction(QIcon("://img/terminal.png"),tr("Open in terminal"), this);
-		connect(actionTerm,&QAction::triggered,this,[this,path](){ app::startDetached("exec", QStringList()<<"--working-directory"<<path<<"--launch"<<"TerminalEmulator"); });
-	menu->addAction(actionTerm);
+//		QAction* actionTerm = new QAction(QIcon("://img/terminal.png"),tr("Open in terminal"), this);
+//		connect(actionTerm,&QAction::triggered,this,[this,path](){ app::startDetached("x-terminal-emulator", QStringList()<<"--working-directory=" + path); });
+//	menu->addAction(actionTerm);
 		QAction* actionDir = new QAction(QIcon("://img/folder.png"),tr("Open in filemanager"), this);
 		connect(actionDir,&QAction::triggered,this,[this,path](){ app::startDetached("xdg-open",QStringList()<<path); });
 	menu->addAction(actionDir);
@@ -271,21 +261,28 @@ std::map<QString, QString> MainWindow::getMountList()
 void MainWindow::slot_sshMenuUpdate()
 {
 	m_pSSHMenu->clear();
+	if( !QDir(app::conf.sshConfDir).exists() ) return;
 
-		QAction* configM = new QAction(QIcon("://img/system.png"),tr("Config"), this);
-		connect(configM,&QAction::triggered,this,[this](){ app::startDetached("exo-open",QStringList()<<app::conf.sshConfig); });
-	m_pSSHMenu->addAction(configM);
-		QAction* confiDirgM = new QAction(QIcon("://img/folder.png"),"~/.ssh", this);
-		connect(confiDirgM,&QAction::triggered,this,[this](){ app::startDetached("exo-open",QStringList()<<app::conf.sshConfDir); });
-	m_pSSHMenu->addAction(confiDirgM);
+	if( QFile(app::conf.sshConfig).exists() ){
+			QAction* configM = new QAction(QIcon("://img/system.png"),tr("Config"), this);
+			connect(configM,&QAction::triggered,this,[this](){ app::startDetached("xdg-open",QStringList()<<app::conf.sshConfig); });
+		m_pSSHMenu->addAction(configM);
+	}
+	if( QDir(app::conf.sshConfDir).exists() ){
+			QAction* confiDirgM = new QAction(QIcon("://img/folder.png"),"~/.ssh", this);
+			connect(confiDirgM,&QAction::triggered,this,[this](){ app::startDetached("xdg-open",QStringList()<<app::conf.sshConfDir); });
+		m_pSSHMenu->addAction(confiDirgM);
+	}
 	m_pSSHMenu->addSeparator();
 
-	FILE* f = fopen(app::conf.sshConfig.toLatin1().data(),"r");
+
 	QByteArray buff;
-	char ch;
-	uint8_t n;
-	while( (n = fread(&ch,1,1,f) ) > 0 ) buff.append(ch);
-	fclose(f);
+	QFile f( app::conf.sshConfig );
+	if( !f.exists() ) return;
+	if( f.open( QIODevice::ReadOnly ) ){
+		buff = f.readLine();
+		f.close();
+	}
 
 	SSHConfig sshconf;
 	std::vector<SSHConfig> array;
@@ -480,8 +477,8 @@ void MainWindow::enterEvent(QEvent *event)
 {
 	//Q_UNUSED(event);
 	getMainSize();
-	move( (app::screen.width()/2)-(m_windowSize.width()/2) ,0);
-	m_pExecWindow->move( (app::screen.width()/2)-(this->width()/2) ,  this->pos().y() + this->height() + 5);
+	this->move( app::screen.x() + (app::screen.width()/2)-(m_windowSize.width()/2) , app::screen.y());
+	m_pExecWindow->move( app::screen.x() + (app::screen.width()/2)-(m_pExecWindow->width()/2), this->pos().y() + this->height() + 5);
 	setWindowOpacity( 1 );
 
 	QMainWindow::enterEvent(event);
@@ -490,8 +487,8 @@ void MainWindow::enterEvent(QEvent *event)
 void MainWindow::leaveEvent(QEvent *event)
 {
 	//Q_UNUSED(event);
+
 	panelHide();
-	m_pExecWindow->move( (app::screen.width()/2)-(this->width()/2) ,  this->pos().y() + this->height() + 5);
 
 	QMainWindow::leaveEvent(event);
 }
@@ -502,7 +499,6 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 	getMainSize();
 	panelHide();
-	m_pExecWindow->move( (app::screen.width()/2)-(m_pExecWindow->width()/2) ,  this->pos().y() + this->height() + 5);
 
 	QMainWindow::resizeEvent(event);
 }

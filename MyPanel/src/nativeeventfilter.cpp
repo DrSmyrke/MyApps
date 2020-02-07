@@ -32,7 +32,6 @@ bool NativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *mes
 {
 	Q_UNUSED(eventType)
 	Q_UNUSED(result)
-	printf("NativeEventFilter::nativeEventFilter\n");
 	/* В вот обработка события строится уже на библиотеке XCB вместо Xlib.
 	 * Вроде как, получая событие Qt знает его в качестве XCB события,
 	 * но не знает его в качестве события Xlib, хотя использовать более

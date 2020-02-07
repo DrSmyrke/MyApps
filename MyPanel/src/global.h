@@ -2,7 +2,7 @@
 #define GLOBAL_H
 
 #include <QDir>
-#include <QSize>
+#include <QRect>
 
 enum{
 	key_mode_ctrl = 0x01,
@@ -61,7 +61,6 @@ struct Valuta{
 //};
 
 struct Config{
-	std::vector<QString> autostartList;
 	SyncSettings sync;
 	QString sshConfDir = QDir::homePath()+"/.ssh";
 	QString sshConfig = QDir::homePath()+"/.ssh/config";
@@ -74,7 +73,7 @@ struct Config{
 
 namespace app {
 	extern Config conf;
-	extern QSize screen;
+	extern QRect screen;
 	extern QString localeName;
 
 	void loadSettings();

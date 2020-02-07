@@ -35,10 +35,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 			syncDirsBox->addWidget(new QLabel( tr("<b>Sync save dirs:</b>") ));
 			syncDirsBox->addWidget(m_pSyncSaveDirs);
 		vBox->addLayout(syncDirsBox);
-			QHBoxLayout* autostartBox = new QHBoxLayout();
-			autostartBox->addWidget(new QLabel( tr("<b>Autostart:</b>") ));
-			autostartBox->addWidget(m_pEditor);
-		vBox->addLayout(autostartBox);
 
 
 
@@ -54,10 +50,6 @@ Settings::Settings(QWidget *parent) : QMainWindow(parent)
 	connect(m_pEditor,&QTextEdit::textChanged,this,[this]{ m_changeSettings = true; });
 	connect(saveB,&QPushButton::clicked,this,[this]{
 		if(m_changeSettings){
-
-			app::conf.autostartList.clear();
-			for(auto elem:m_pEditor->toPlainText().split("\n")) app::conf.autostartList.push_back( elem );
-
 			app::conf.sync.saveDirs.clear();
 			for(auto elem:m_pSyncSaveDirs->toPlainText().split("\n")) app::conf.sync.saveDirs.push_back( elem );
 
@@ -79,7 +71,6 @@ void Settings::open()
 {
 	this->show();
 	m_pEditor->clear();
-	for( auto elem:app::conf.autostartList ) m_pEditor->append( elem );
 
 	m_pSyncSaveDirs->clear();
 	for( auto elem:app::conf.sync.saveDirs ) m_pSyncSaveDirs->append( elem );

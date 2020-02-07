@@ -5,7 +5,7 @@
 
 namespace app {
 	Config conf;
-	QSize screen;
+	QRect screen;
 	QString localeName;
 
 	void loadSettings()
@@ -21,11 +21,6 @@ namespace app {
 		settings.beginGroup("SYNC_SAVE_DIRS");
 		app::conf.sync.saveDirs.clear();
 		for(auto elem:settings.childKeys()) app::conf.sync.saveDirs.push_back( settings.value(elem).toString() );
-		settings.endGroup();
-
-		settings.beginGroup("AUTOSTART");
-		app::conf.autostartList.clear();
-		for(auto elem:settings.childKeys()) app::conf.autostartList.push_back( settings.value(elem).toString() );
 		settings.endGroup();
 
 		settings.beginGroup("BOOKMARKS");
@@ -62,12 +57,6 @@ namespace app {
 		i = 0;
 		for(auto elem:app::conf.sync.saveDirs){
 			settings.setValue("SYNC_SAVE_DIRS/" + QString::number(i),elem);
-			i++;
-		}
-
-		i = 0;
-		for(auto elem:app::conf.autostartList){
-			settings.setValue("AUTOSTART/" + QString::number(i),elem);
 			i++;
 		}
 
