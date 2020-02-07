@@ -204,9 +204,9 @@ void MainWindow::reloadBookmarks()
 void MainWindow::drawDirMenu(QMenu *menu, const QString &path)
 {
 	menu->clear();
-//		QAction* actionTerm = new QAction(QIcon("://img/terminal.png"),tr("Open in terminal"), this);
-//		connect(actionTerm,&QAction::triggered,this,[this,path](){ app::startDetached("x-terminal-emulator", QStringList()<<"--working-directory=" + path); });
-//	menu->addAction(actionTerm);
+		QAction* actionTerm = new QAction(QIcon("://img/terminal.png"),tr("Open in terminal"), this);
+		connect(actionTerm,&QAction::triggered,this,[this,path](){ app::startDetached("x-terminal-emulator", QStringList(), path); });
+	menu->addAction(actionTerm);
 		QAction* actionDir = new QAction(QIcon("://img/folder.png"),tr("Open in filemanager"), this);
 		connect(actionDir,&QAction::triggered,this,[this,path](){ app::startDetached("xdg-open",QStringList()<<path); });
 	menu->addAction(actionDir);
@@ -380,7 +380,7 @@ void MainWindow::slot_GlobalHotkey(const uint8_t mode, const uint16_t key)
 		//case key_type_Tilda: if(mode == key_mode_ctrl) startDetached("exo-open", QStringList()<<"--working-directory"<<QDir::homePath()<<"--launch"<<"TerminalEmulator"); break;
 		case key_type_Tilda:
 			if(mode == key_mode_ctrl){
-				app::startDetached("exec",QStringList()<<"x-terminal-emulator"<<QDir::homePath()<<"--launch"<<"TerminalEmulator");
+				app::startDetached("x-terminal-emulator",QStringList());
 			}
 		break;
 	}

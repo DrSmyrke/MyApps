@@ -120,10 +120,10 @@ namespace app {
 		fclose(f);
 	}
 
-	bool startDetached(const QString &cmd, const QStringList &args)
+	bool startDetached(const QString &cmd, const QStringList &args, const QString &workPath)
 	{
 		QString str = cmd + " " + args.join(" ");
-		auto res = QProcess::startDetached( cmd, args );
+		auto res = QProcess::startDetached( cmd, args, workPath );
 		app::setLog(1,QString("[EXEC %1]: %2").arg( (res)?"true":"false" ).arg(str));
 		return res;
 	}

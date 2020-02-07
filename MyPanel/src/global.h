@@ -80,7 +80,7 @@ namespace app {
 	void saveSettings();
 	bool parsArgs(int argc, char *argv[]);
 	void setLog(const uint8_t logLevel, const QString &mess);
-	bool startDetached( const QString &cmd, const QStringList &args = QStringList() );
+	bool startDetached(const QString &cmd, const QStringList &args = QStringList() , const QString &workPath = QDir::homePath());
 }
 
 namespace mf {
