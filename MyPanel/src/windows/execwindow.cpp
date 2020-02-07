@@ -203,18 +203,18 @@ void ExecWindow::slot_returnPressed()
 	}
 
 	if( flagTerm ){
-		if( flagSu ) text = "sudo " + text;
+		if( flagSu ) text = "pkexec " + text;
 		app::startDetached("exec",QStringList()<<"x-terminal-emulator"<<"-e"<<text);
 	}else{
 		QStringList tmp = text.split(" ");
 		if( flagSu ){
-			bool res = app::startDetached("pkexec",tmp);
-			if( !res ) res = app::startDetached("gksu",tmp);
-			if( !res ) res = app::startDetached("ksudo",tmp);
+			bool res = app::startDetached("pkexec",QStringList()<<tmp);
+			if( !res ) res = app::startDetached("gksu",QStringList()<<tmp);
+			if( !res ) res = app::startDetached("ksudo",QStringList()<<tmp);
 		}else{
 			QString cmd = tmp[0];
 			tmp.pop_front();
-			app::startDetached(cmd,tmp);
+			app::startDetached(cmd,QStringList()<<tmp);
 		}
 	}
 }
