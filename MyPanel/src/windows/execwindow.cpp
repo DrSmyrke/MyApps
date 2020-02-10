@@ -204,7 +204,7 @@ void ExecWindow::slot_returnPressed()
 
 	if( flagTerm ){
 		if( flagSu ) text = "pkexec " + text;
-		app::startDetached("exec",QStringList()<<"x-terminal-emulator"<<"-e"<<text);
+		app::startDetached("x-terminal-emulator",QStringList()<<"-e"<<text);
 	}else{
 		QStringList tmp = text.split(" ");
 		if( flagSu ){
