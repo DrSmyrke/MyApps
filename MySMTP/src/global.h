@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <QString>
 #include <map>
+#include <vector>
 
 struct SMTP_Config{
 	uint16_t port = 2525;

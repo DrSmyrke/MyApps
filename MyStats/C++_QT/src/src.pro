@@ -14,6 +14,13 @@ TEMPLATE = app
 CONFIG(debug, debug|release):CONFIGURATION=debug
 CONFIG(release, debug|release):CONFIGURATION=release
 
+build_pass:CONFIG(debug, debug|release) {
+    unix: TARGET = $$join(TARGET,,,_debug)
+    else: TARGET = $$join(TARGET,,,d)
+}
+
+CONFIG += c++11
+
 OBJECTS_DIR         = ../build/obj/$${CONFIGURATION}
 MOC_DIR             = ../build/$${CONFIGURATION}
 RCC_DIR             = ../build/rcc
@@ -57,8 +64,3 @@ exists(./myLibs.pri):include(./myLibs.pri)
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-build_pass:CONFIG(debug, debug|release) {
-    unix: TARGET = $$join(TARGET,,,_debug)
-    else: TARGET = $$join(TARGET,,,d)
-}

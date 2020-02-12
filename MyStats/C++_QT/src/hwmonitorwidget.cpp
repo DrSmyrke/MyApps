@@ -1,6 +1,7 @@
 #include "hwmonitorwidget.h"
 #include <QPainter>
 #include <QProcess>
+#include <QTimer>
 
 HWMonitorWidget::HWMonitorWidget(QWidget *parent) : QWidget(parent)
 {
@@ -194,8 +195,11 @@ bool HWMonitorWidget::mouseClickToObject()
 			//QProcess::startDetached("pkexec \"swapoff -a && swapon -a\" || pkexec \"swapspace -e\"");
 			//mf::startDetached();
 			//if( !mf::startDetached( "pkexec", QStringList() << "'swapspace -e'" ) ){
-				mf::startDetached( "pkexec", QStringList() << "swapoff" << "-a" );
-				mf::startDetached( "pkexec", QStringList() << "swapon" << "-a" );
+			if( mf::startDetached( "pkexec", QStringList() << "swapoff" << "-a" ) ){
+				QTimer::singleShot( 3000, this, [this](){
+					mf::startDetached( "pkexec", QStringList() << "swapon" << "-a" );
+				} );
+			}
 			//}
 			m_swapParam.hover = false;
 			find = true;
