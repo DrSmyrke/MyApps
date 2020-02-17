@@ -1,5 +1,4 @@
 *.user
-Image Editor/build*
 build-src*
 bin/*
 *build-*
