@@ -24,7 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
 	setWindowIcon( QIcon( "://index.ico" ) );
 
 
-	connect( m_pSPort, &QSerialPort::readyRead, this, &MainWindow::slot_readyRead );
 	connect( ui->findB, &QPushButton::clicked, this, &MainWindow::slot_rescanPorts );
 	connect( m_pTimer, &QTimer::timeout, this, [this](){
 		m_curDate = QDate::currentDate();
@@ -106,8 +105,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::slot_readyRead()
 {
-	if( !m_working ) return;
-
 	while( m_pSPort->bytesAvailable() ) m_buff.append( m_pSPort->readAll() );
 
 	if( m_buff.size() == 1 ){
@@ -163,7 +160,10 @@ void MainWindow::slot_rescanPorts()
 		m_buff.clear();
 	}
 
-	m_working = false;
+	if( m_working ){
+		disconnect( m_pSPort, &QSerialPort::readyRead, this, &MainWindow::slot_readyRead );
+		m_working = false;
+	}
 
 	ui->findB->setEnabled( false );
 	ui->statusL->setText( "<b>Find...</b>" );
@@ -171,15 +171,16 @@ void MainWindow::slot_rescanPorts()
 	bool found = false;
 	auto list = QSerialPortInfo::availablePorts();
 	for( auto portInfo:list ){
+		auto portName = portInfo.portName();
 		auto pid = portInfo.hasProductIdentifier();
 		auto vid = portInfo.hasVendorIdentifier();
 		if( !pid || !vid ) continue;
 
-//		auto man = portInfo.manufacturer();
-//		auto sn = portInfo.serialNumber();
+		auto man = portInfo.manufacturer();
+		auto sn = portInfo.serialNumber();
 //		auto sysloc = portInfo.systemLocation();
 
-		auto portName = portInfo.portName();
+
 		if( checkPort( portName, false ) ){
 			found = true;
 			break;
@@ -189,6 +190,7 @@ void MainWindow::slot_rescanPorts()
 	if( found ){
 		ui->statusL->setText( "<b>Connected</b>" );
 		m_working = true;
+		connect( m_pSPort, &QSerialPort::readyRead, this, &MainWindow::slot_readyRead );
 	}else{
 		ui->statusL->setText( "<b>Not Connected</b>" );
 	}
@@ -213,7 +215,13 @@ bool MainWindow::checkPort(const QString &port, bool close)
 {
 	bool res = false;
 
-	if( m_pSPort->isOpen() ) m_pSPort->close();
+	if( m_pSPort->isOpen() ){
+		if( m_pSPort->bytesAvailable() ){
+			auto ba = m_pSPort->readAll();
+			ba.clear();
+		}
+		m_pSPort->close();
+	}
 
 	m_pSPort->setPortName( port );
 
@@ -230,6 +238,8 @@ bool MainWindow::checkPort(const QString &port, bool close)
 			}else{
 				close = true;
 			}
+		}else{
+			close = true;
 		}
 
 		if( close ) m_pSPort->close();
