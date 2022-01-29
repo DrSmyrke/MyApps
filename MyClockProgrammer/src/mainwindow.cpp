@@ -178,6 +178,7 @@ void MainWindow::slot_rescanPorts()
 
 		auto man = portInfo.manufacturer();
 		auto sn = portInfo.serialNumber();
+		if( man != "wch.cn" ) continue;
 //		auto sysloc = portInfo.systemLocation();
 
 
@@ -226,12 +227,14 @@ bool MainWindow::checkPort(const QString &port, bool close)
 	m_pSPort->setPortName( port );
 
 	if( m_pSPort->open( QIODevice::ReadWrite ) ){
+		m_pSPort->waitForReadyRead( 5000 );
+		m_pSPort->waitForBytesWritten( 5000 );
 		QByteArray btx;
 		btx.resize( 1 );
 		btx[ 0 ] = 0xF1;
 		sendData( btx );
-		m_pSPort->waitForReadyRead( 3000 );
-		if( m_pSPort->bytesAvailable() == 1 ){
+		m_pSPort->waitForReadyRead( 10000 );
+		if( m_pSPort->bytesAvailable() >= 1 ){
 			auto ba = m_pSPort->read( 1 );
 			if( ba[ 0 ] == (char)0xCF ){
 				res = true;
