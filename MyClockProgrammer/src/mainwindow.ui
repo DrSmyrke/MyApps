@@ -466,6 +466,19 @@
       </item>
      </layout>
     </item>
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Created by &lt;a href=&quot;http://drsmyrke.ru&quot;&gt;Dr.Smyrke&lt;/a&gt;</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="openExternalLinks">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <action name="actionExit">
